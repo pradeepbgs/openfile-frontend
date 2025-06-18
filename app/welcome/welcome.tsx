@@ -1,48 +1,94 @@
+import Header from "~/components/header";
 import logoDark from "./logo-dark.svg";
 import logoLight from "./logo-light.svg";
-
+import bg from 'public/bg.png'
 export function Welcome() {
   return (
-    <main className="flex items-center justify-center pt-16 pb-4">
-      <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
-        <header className="flex flex-col items-center gap-9">
-          <div className="w-[500px] max-w-[100vw] p-4">
+    <div className="min-h-screen flex flex-col bg-gray-200">
+      <Header />
+
+      <main className="flex-grow">
+
+        {/* Hero Section */}
+        <section className="text-center py-24 px-4 ">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <img
-              src={logoLight}
-              alt="React Router"
-              className="block w-full dark:hidden"
+              src={bg}
+              alt="File Upload Illustration"
+              className="rounded-lg shadow-md w-full max-h-[400px] object-cover"
             />
-            <img
-              src={logoDark}
-              alt="React Router"
-              className="hidden w-full dark:block"
-            />
+            <div>
+              <h2 className="text-5xl font-extrabold text-gray-900">Private & Anonymous</h2>
+              <h2 className="text-5xl font-extrabold text-gray-900">File sharing</h2>
+
+              <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
+                Dropfile lets you receive files without exposing your contact details. No sign-up needed for uploaders.
+              </p>
+              <div className="mt-8 flex justify-center items-center space-x-4">
+                <a href="/dashboard" className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800">Create Your Link</a>
+                <a href="#how" className="text-black underline hover:text-gray-800">How it works</a>
+              </div>
+            </div>
           </div>
-        </header>
-        <div className="max-w-[300px] w-full space-y-6 px-4">
-          <nav className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
-            <p className="leading-6 text-gray-700 dark:text-gray-200 text-center">
-              What&apos;s next?
-            </p>
-            <ul>
-              {resources.map(({ href, text, icon }) => (
-                <li key={href}>
-                  <a
-                    className="group flex items-center gap-3 self-stretch p-3 leading-normal text-blue-700 hover:underline dark:text-blue-500"
-                    href={href}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {icon}
-                    {text}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </div>
-      </div>
-    </main>
+        </section>
+
+        {/* How It Works */}
+        <section id="how" className="py-24 px-4 text-black">
+          <div className="max-w-6xl mx-auto text-center">
+            <h3 className="text-3xl font-bold mb-12">How It Works?</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+              <div className="p-6 border rounded-lg shadow-sm">
+                <h4 className="text-xl font-semibold">1. Sign Up</h4>
+                <p className="mt-2 text-gray-600">Create an account and get your own private upload link.</p>
+              </div>
+              <div className="p-6 border rounded-lg shadow-sm">
+                <h4 className="text-xl font-semibold">2. Share Your Link</h4>
+                <p className="mt-2 text-gray-600">Send the link to anyone — no login required on their side.</p>
+              </div>
+              <div className="p-6 border rounded-lg shadow-sm">
+                <h4 className="text-xl font-semibold">3. Receive Files</h4>
+                <p className="mt-2 text-gray-600">Uploaded files appear directly in your dashboard. Simple & secure.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Use Cases */}
+        <section className="py-24 bg-gray-200 px-4 text-black">
+          <div className="max-w-6xl mx-auto text-center">
+            <h3 className="text-3xl font-bold mb-12">Perfect for</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+              <div className="p-6">
+                <h4 className="text-xl font-semibold">🎬 Creators</h4>
+                <p className="mt-2 text-gray-600">Collect video testimonials from fans and clients securely.</p>
+              </div>
+              <div className="p-6">
+                <h4 className="text-xl font-semibold">🎨 Freelancers</h4>
+                <p className="mt-2 text-gray-600">Get design assets from clients without messy email threads.</p>
+              </div>
+              <div className="p-6">
+                <h4 className="text-xl font-semibold">🎉 Event Organizers</h4>
+                <p className="mt-2 text-gray-600">Gather photos and videos from attendees in one place.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="py-24 bg-gray-200 text-center px-4">
+          <h3 className="text-3xl text-black font-bold">Ready to simplify Anonymous file sharing?</h3>
+          <p className="mt-4 text-gray-600">No more contacts shared. No spam. Just clean, direct uploads.</p>
+          <div className="mt-6">
+            <a href="/auth/register" className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800">Create Your Link</a>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-gray-100 text-center text-sm py-6 text-gray-500">
+        © {new Date().getFullYear()} Dropfile. Built by spicemen.
+      </footer>
+    </div>
   );
 }
 
