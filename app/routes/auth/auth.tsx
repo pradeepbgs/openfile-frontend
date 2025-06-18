@@ -61,7 +61,7 @@ export default function AuthPage() {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full bg-black text-white py-3 rounded-md hover:bg-gray-800 transition"
+                            className="w-full bg-black text-white py-3 rounded-md hover:bg-gray-800 transition cursor-pointer"
                         >
                             {isSignup ? "Sign Up" : "Login"}
                         </button>
@@ -84,8 +84,8 @@ export default function AuthPage() {
                     </div>
 
                     <div className="flex justify-center">
-                        <FaGoogle size={25} color="black" className="mr-10" /> 
-                        <FaGithub size={25} color="black" className="mr-2" />
+                        <FaGoogle size={25} color="black" className="mr-10 cursor-pointer" /> 
+                        <FaGithub size={25} color="black" className="mr-2 cursor-pointer" />
                     </div>
                 </div>
             </div>

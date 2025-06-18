@@ -1,7 +1,10 @@
 import Header from "~/components/header";
 import logoDark from "./logo-dark.svg";
 import logoLight from "./logo-light.svg";
-import bg from 'public/bg.png'
+import bg from 'public/bg2.png'
+import { motion } from "framer-motion";
+
+
 export function Welcome() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-200">
@@ -10,25 +13,58 @@ export function Welcome() {
       <main className="flex-grow">
 
         {/* Hero Section */}
-        <section className="text-center py-24 px-4 ">
+        <section className="text-center py-15 px-4 ">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <img
               src={bg}
               alt="File Upload Illustration"
-              className="rounded-lg shadow-md w-full max-h-[400px] object-cover"
+              className="rounded-lg w-[90%] max-h-[500px] object-cover"
             />
-            <div>
-              <h2 className="text-5xl font-extrabold text-gray-900">Private & Anonymous</h2>
-              <h2 className="text-5xl font-extrabold text-gray-900">File sharing</h2>
 
-              <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
+            <div
+            >
+              <motion.h2
+                className="text-5xl font-extrabold text-gray-900"
+                initial={{ opacity: 0, x: -40 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+              >
+                Private & Anonymous
+              </motion.h2>
+
+              <motion.h2
+                className="text-5xl font-extrabold text-gray-900"
+                initial={{ opacity: 0, x: 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+              >
+                File sharing
+              </motion.h2>
+
+              <p
+                className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto"
+              >
                 Dropfile lets you receive files without exposing your contact details. No sign-up needed for uploaders.
               </p>
-              <div className="mt-8 flex justify-center items-center space-x-4">
-                <a href="/dashboard" className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800">Create Your Link</a>
-                <a href="#how" className="text-black underline hover:text-gray-800">How it works</a>
+
+              <div
+                className="mt-8 flex justify-center items-center space-x-4"
+              >
+                <a
+                  href="/dashboard"
+                  className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800"
+                >
+                  Create Your Link
+                </a>
+                <a
+                  href="#how"
+                  className="text-black underline hover:text-gray-800"
+                >
+                  How it works
+                </a>
               </div>
             </div>
+
           </div>
         </section>
 

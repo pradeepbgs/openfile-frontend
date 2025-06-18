@@ -3,7 +3,6 @@ import { Link } from 'react-router'
 
 function Header() {
     return (
-        // {/* Header Placeholder   */}
         <header className="sticky top-0 z-50 bg-gray-200 shadow-sm">
             <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
                 <h1 className="text-xl font-bold text-gray-900">
