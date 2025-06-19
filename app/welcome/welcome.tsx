@@ -83,7 +83,7 @@ export function Welcome() {
               </motion.h2>
 
               <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
-                Dropfile helps you receive files safely without sharing contact details. No sign-up required for uploaders.
+                OpenFile helps you receive files safely without sharing contact details. No sign-up required for uploaders.
               </p>
 
               <div className="mt-8 flex justify-center items-center space-x-4">
@@ -137,7 +137,7 @@ export function Welcome() {
         {/* Optional new section */}
         <section className="py-10 px-4 text-black">
           <div className="max-w-6xl mx-auto text-center">
-            <h3 className="text-3xl font-bold mb-12">Why Dropfile?</h3>
+            <h3 className="text-3xl font-bold mb-12">Why OpenFile?</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
               <div className="p-6 border rounded-lg shadow-sm">
                 <h4 className="text-xl font-semibold">🔐 Private</h4>
@@ -169,7 +169,7 @@ export function Welcome() {
 
       {/* Footer */}
       <footer className="bg-gray-100 text-center text-sm py-6 text-gray-500">
-        © {new Date().getFullYear()} Dropfile. Built by spicemen.
+        © {new Date().getFullYear()} OpenFile. Built by spicemen.
       </footer>
     </div>
   )
