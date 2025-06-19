@@ -1,31 +1,31 @@
 import { useState } from "react";
-import { FaGithub, FaGoogle } from "react-icons/fa";
 import Header from "~/components/header";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { AuthSchema } from "~/zod/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-
+import { GoogleLogin } from '@react-oauth/google';
+import { useGoogleLoginHandler } from "~/service/api";
 
 type AuthFormData = z.infer<typeof AuthSchema>
+
 export default function AuthPage() {
+
     const [isSignup, setIsSignup] = useState(false);
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors, isSubmitting },
-    } = useForm<AuthFormData>({
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AuthFormData>({
         resolver: zodResolver(AuthSchema),
     })
 
     const onSubmit = async (data: AuthFormData) => {
-        console.log(data);
+        // console.log(data);
     };
 
+    const handleGoogleLogin = useGoogleLoginHandler()
+
+    
     return (
         <div>
-
             <Header />
             <div className="min-h-screen flex items-center justify-center bg-gray-200 px-4">
                 <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-md">
@@ -84,8 +84,13 @@ export default function AuthPage() {
                     </div>
 
                     <div className="flex justify-center">
-                        <FaGoogle size={25} color="black" className="mr-10 cursor-pointer" /> 
-                        <FaGithub size={25} color="black" className="mr-2 cursor-pointer" />
+
+                        <GoogleLogin
+                            onSuccess={(res) => handleGoogleLogin(res.credential)}
+                            onError={() => console.log('Login Failed')}
+                        />
+                        {/* <FaGoogle size={25} color="black" className="mr-10 cursor-pointer" /> */}
+                        {/* <FaGithub size={25} color="black" className="mr-2 cursor-pointer" /> */}
                     </div>
                 </div>
             </div>
