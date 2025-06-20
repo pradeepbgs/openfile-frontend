@@ -51,7 +51,7 @@ const howItWorks = [
 
 export function Welcome() {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-200">
+    <div className="min-h-screen flex flex-col bg-blue-200">
       <Header />
       <main className="flex-grow">
         {/* Hero Section */}
@@ -65,7 +65,7 @@ export function Welcome() {
 
             <div>
               <motion.h2
-                className="text-5xl font-extrabold text-gray-900"
+                className="text-[2.6rem] font-extrabold text-gray-900"
                 initial={{ opacity: 0, x: -40 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
@@ -74,7 +74,7 @@ export function Welcome() {
               </motion.h2>
 
               <motion.h2
-                className="text-5xl font-extrabold text-gray-900"
+                className="text-[2rem] font-extrabold text-gray-900"
                 initial={{ opacity: 0, x: 40 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4, duration: 0.6 }}
@@ -110,7 +110,7 @@ export function Welcome() {
             <h3 className="text-3xl font-bold mb-12">How It Works</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
               {howItWorks.map((item, idx) => (
-                <div key={idx} className="p-6 border rounded-lg shadow-sm border-dashed">
+                <div key={idx} className="p-6 border border-gray-600 rounded-lg border-dashed">
                   <h4 className="text-xl font-semibold">{item.title}</h4>
                   <p className="mt-2 text-gray-600">{item.description}</p>
                 </div>
@@ -120,12 +120,12 @@ export function Welcome() {
         </section>
 
         {/* Use Cases */}
-        <section className="md:py-10 bg-gray-200 px-4 text-black">
+        <section className="md:py-10 bg-blue-200 px-4 text-black">
           <div className="max-w-6xl mx-auto text-center">
             <h3 className="text-3xl font-bold mb-12">Perfect For</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
               {PerfectFor.map((item, idx) => (
-                <div key={idx} className="p-6 border rounded-lg shadow-sm border-dashed">
+                <div key={idx} className="p-6 border border-gray-600 rounded-lg  border-dashed">
                   <h4 className="text-xl font-semibold">{item.title}</h4>
                   <p className="mt-2 text-gray-600">{item.description}</p>
                 </div>
@@ -139,11 +139,11 @@ export function Welcome() {
           <div className="max-w-6xl mx-auto text-center">
             <h3 className="text-3xl font-bold mb-12">Why OpenFile?</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
-              <div className="p-6 border rounded-lg shadow-sm">
+              <div className="p-6 border border-gray-600 rounded-lg border-dashed">
                 <h4 className="text-xl font-semibold">🔐 Private</h4>
                 <p className="mt-2 text-gray-600">Your uploads are end-to-end private. Only accessible to you.</p>
               </div>
-              <div className="p-6 border rounded-lg shadow-sm">
+              <div className="p-6 border border-gray-600 rounded-lg border-dashed">
                 <h4 className="text-xl font-semibold">🌐 Anonymous</h4>
                 <p className="mt-2 text-gray-600">No login required. Share files without revealing who you are.</p>
               </div>
@@ -153,7 +153,7 @@ export function Welcome() {
 
 
         {/* Final CTA */}
-        <section className="py-24 bg-gray-200 text-center px-4">
+        <section className="py-24 bg-blue-200 text-center px-4">
           <h3 className="text-3xl text-black font-bold">Ready to simplify anonymous file sharing?</h3>
           <p className="mt-4 text-gray-600">No accounts, no spam — just simple, secure file transfers.</p>
           <div className="mt-6">

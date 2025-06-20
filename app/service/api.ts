@@ -41,3 +41,22 @@ export function useGoogleLoginHandler() {
 
     return handleGoogleLogin;
 }
+
+
+export const authCheck = async () => {
+    try {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/auth/check`, {
+            method: "GET",
+            credentials: 'include'
+        });
+
+        if (!res.ok) {
+            useAuth.getState().logout()
+        }
+
+        const data = await res.json();
+        useAuth.getState().setUser(data.user);
+    } catch (err) {
+        console.error("Login error:", err);
+    }
+}

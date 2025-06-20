@@ -10,6 +10,8 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { useEffect, useState } from "react";
+import { authCheck } from "./service/api";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -42,10 +44,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+
+function ClientOnly({ children }: { children: React.ReactNode }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    authCheck();
+  }, []);
+
+  return isClient ? children : null;
+}
+
 export default function App() {
+
   return <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID} >
-    <Outlet />
-    
+     <ClientOnly>
+        <Outlet />
+      </ClientOnly>
+
   </GoogleOAuthProvider>;
 }
 
