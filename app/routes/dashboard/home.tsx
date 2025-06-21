@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import CreateLinkPage from "./create-link";
 
 const recentLinks = [
   {
@@ -16,6 +17,9 @@ const recentLinks = [
 ];
 
 export default function DashboardHome() {
+  return <CreateLinkPage />
+
+  // for link page
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Welcome to your Dashboard</h1>

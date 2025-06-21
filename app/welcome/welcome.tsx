@@ -51,7 +51,7 @@ const howItWorks = [
 
 export function Welcome() {
   return (
-    <div className="min-h-screen flex flex-col bg-blue-200">
+    <div className="min-h-screen flex flex-col bg-blue-100">
       <Header />
       <main className="flex-grow">
         {/* Hero Section */}
@@ -120,7 +120,7 @@ export function Welcome() {
         </section>
 
         {/* Use Cases */}
-        <section className="md:py-10 bg-blue-200 px-4 text-black">
+        <section className="md:py-10  px-4 text-black">
           <div className="max-w-6xl mx-auto text-center">
             <h3 className="text-3xl font-bold mb-12">Perfect For</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
@@ -153,7 +153,7 @@ export function Welcome() {
 
 
         {/* Final CTA */}
-        <section className="py-24 bg-blue-200 text-center px-4">
+        <section className="py-24  text-center px-4">
           <h3 className="text-3xl text-black font-bold">Ready to simplify anonymous file sharing?</h3>
           <p className="mt-4 text-gray-600">No accounts, no spam — just simple, secure file transfers.</p>
           <div className="mt-6">
@@ -168,7 +168,7 @@ export function Welcome() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-100 text-center text-sm py-6 text-gray-500">
+      <footer className="bg-gray-200 text-center text-sm py-6 text-gray-500">
         © {new Date().getFullYear()} OpenFile. Built by spicemen.
       </footer>
     </div>

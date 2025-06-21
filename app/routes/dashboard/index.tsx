@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet } from "react-router";
+import { Link, NavLink, Outlet, useNavigate } from "react-router";
+import { useAuth } from "~/zustand/store";
 
 
 const Tabs = [
@@ -17,10 +18,15 @@ const Tabs = [
 ]
 
 const DashboardLayout = () => {
+  const navigate = useNavigate()
+  const user = useAuth.getState().user?.email
+  // if (!user) {
+  //   return navigate('/auth')
+  // }
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <aside className="w-64 bg-blue-200 p-4">
+      <aside className="w-57 bg-gray-200 p-4">
         <h2 className="text-xl font-bold mb-4">
           <Link to={'/'}>OpenFile</Link>
         </h2>
@@ -40,7 +46,7 @@ const DashboardLayout = () => {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 p-6 bg-white">
+      <main className="flex-1 p-6 bg-gray-100">
         <Outlet />
       </main>
     </div>
