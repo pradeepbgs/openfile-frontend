@@ -1,18 +1,18 @@
-"use client";
-
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { FaCopy } from "react-icons/fa";
-import { ToastContainer, toast } from 'react-toastify';
+import { downloadKeyFile } from "~/utils/dowload-key";
 
 export const createLinkSchema = z.object({
-  maxUploads: z.number().min(1).default(1).optional(),
+  maxUploads: z.number({ required_error: "Max uploads is required" }).min(1),
   allowedFileType: z.array(z.string()).optional(),
   expiresAt: z.string().datetime().optional(),
-  secretKey: z.string(),
+  secretKey: z.string().min(1),
+  iv: z.string().min(1),
 });
+
 
 type CreateLinkData = z.infer<typeof createLinkSchema>;
 type TimeUnit = "minutes" | "hours" | "days";
@@ -33,6 +33,15 @@ export default function CreateLinkPage() {
   });
 
   const onSubmit = async (data: CreateLinkData) => {
+    const secretKey = data.secretKey
+    const iv = data.iv
+
+    // console.log(iv)
+    // if (!secretKey || !iv) {
+    //   alert("Please generate the encryption key and IV before creating the link.");
+    //   return;
+    // }
+
     let expiresAt: string | undefined;
     if (relativeTime.value) {
       const now = new Date();
@@ -41,7 +50,6 @@ export default function CreateLinkPage() {
       if (relativeTime.unit === "hours") now.setHours(now.getHours() + amount);
       if (relativeTime.unit === "days") now.setDate(now.getDate() + amount);
       expiresAt = now.toISOString()
-      console.log(expiresAt)
     }
 
     const allowedFileTypes = watch('allowedFileType')
@@ -62,17 +70,39 @@ export default function CreateLinkPage() {
       });
 
       const result = await res.json();
-      console.log(result);
-      setUploadUrl(result.uploadUrl);
+      // console.log(result);
+      if (result.error) {
+        console.error(result.error);
+        return;
+      }
+
+      const safeKey = encodeURIComponent(secretKey);
+      const safeIV = encodeURIComponent(iv);
+      const fullLink = `${result.uploadUrl}#key=${safeKey}&iv=${safeIV}`;
+
+      setUploadUrl(fullLink);
+      downloadKeyFile(fullLink, secretKey, iv);
+
       // reset();
     } catch (err) {
       console.error("Failed to create link");
     }
   };
 
+  const generateKeyAndIV = (): void => {
+    const key = crypto.getRandomValues(new Uint8Array(32)); // AES-256
+    const iv = crypto.getRandomValues(new Uint8Array(16));
+
+    const base64Key = btoa(String.fromCharCode.apply(null, [...key]));
+    const base64IV = btoa(String.fromCharCode.apply(null, [...iv]))
+
+    setValue('secretKey', base64Key)
+    setValue('iv', base64IV)
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4">
-      <h1 className="text-2xl font-semibold text-center mb-10">
+      <h1 className="text-2xl font-semibold text-center mb-2">
         Create Secure Upload Link
       </h1>
 
@@ -80,7 +110,7 @@ export default function CreateLinkPage() {
         {/* Form on the left */}
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="w-full max-w-md space-y-5 border border-gray-200 p-6"
+          className="w-full max-w-md space-y-5 border border-gray-200 p-4"
         >
           {/* Max Uploads */}
           <div>
@@ -180,7 +210,27 @@ export default function CreateLinkPage() {
                 {errors.secretKey.message}
               </p>
             )}
+
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Initialization Vector (IV)
+            </label>
+            <input
+              type="text"
+              {...register("iv")}
+              className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+            />
+
+            <button
+              type="button"
+              onClick={generateKeyAndIV}
+              className="mt-1 text-xs text-white px-2 py-2 rounded-sm hover:bg-gray-900 cursor-pointer bg-black"
+            >
+              Generate Secure Key
+            </button>
+          </div>
+
 
           <button
             type="submit"
@@ -207,19 +257,10 @@ export default function CreateLinkPage() {
                 {uploadUrl}
               </a>
               <FaCopy
-                size={18}
+                size={30}
                 className="mt-1 cursor-pointer text-gray-600 hover:text-black"
                 onClick={() => {
                   navigator.clipboard.writeText(uploadUrl);
-                  // toast.success('copied to clipboard', {
-                  //   autoClose: 5000,
-                  //   hideProgressBar: false,
-                  //   closeOnClick: false,
-                  //   pauseOnHover: true,
-                  //   draggable: true,
-                  //   progress: undefined,
-                  //   theme: "light",
-                  //   });
                 }}
               />
             </div>
@@ -228,18 +269,6 @@ export default function CreateLinkPage() {
           )}
         </div>
       </div>
-      <ToastContainer
-          position="bottom-left"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick={false}
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
     </div>
 
   );

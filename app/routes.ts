@@ -9,5 +9,6 @@ export default [
         index('routes/dashboard/home.tsx'),
         route('profile', 'routes/dashboard/profile.tsx'),
         route('settings', 'routes/dashboard/settings.tsx')
-    ])
+    ]),
+    route('upload', 'routes/upload/index.tsx'),
 ] satisfies RouteConfig;
