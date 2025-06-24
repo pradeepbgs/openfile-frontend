@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "~/zustand/store";
@@ -42,7 +43,6 @@ export function useGoogleLoginHandler() {
     return handleGoogleLogin;
 }
 
-
 export const authCheck = async () => {
     try {
         const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/auth/check`, {
@@ -59,4 +59,27 @@ export const authCheck = async () => {
     } catch (err) {
         console.error("Login error:", err);
     }
+}
+
+
+const fetchValidateToken = async (token: string) => {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link/validate?token=${token}`, {
+        method: "GET",
+        credentials: 'include',
+    });
+
+    if (!res.ok) {
+        throw new Error("Invalid or expired token");
+    }
+
+    return res.json();
+};
+
+export function useValidateTokenQuery(token: string) {
+    return useQuery({
+        queryKey: ["validate-token", token],
+        queryFn: () => fetchValidateToken(token),
+        enabled: !!token,
+        retry: false,
+    });
 }

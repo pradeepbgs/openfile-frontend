@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useParams, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
+import { useValidateTokenQuery } from "~/service/api";
 
 function UploadPage() {
     const [key, setKey] = useState("");
@@ -14,13 +15,12 @@ function UploadPage() {
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
-        setValue,
-        getValues,
         watch,
     } = useForm();
 
-    // Watch file input separately since it's uncontrolled
     const files = watch("files");
+
+    const { isError, isLoading, error } = useValidateTokenQuery(token || "");
 
     const onSubmit = async (data: any) => {
         setMessage("");
@@ -35,34 +35,39 @@ function UploadPage() {
             return;
         }
 
-        const formData = new FormData();
-        Array.from(data.files).forEach((file: File) => {
-            formData.append("file", file);
-        });
+        const files: File[] = Array.from(data.files);
 
         try {
-            const res = await fetch(
-                `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file?token=${token}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "X-IV": iv,
-                    },
-                    credentials: "include",
-                    body: formData,
-                });
+            for (const file of files) {
+                const stream = file.stream(); // Get ReadableStream
 
-            const result = await res.json();
-            if (!res.ok) {
-                setMessage(result?.error || "Failed to upload.");
-                return;
+                const res = await fetch(
+                    `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/stream?token=${token}`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/octet-stream",
+                            "X-IV": iv,
+                            "X-Filename": encodeURIComponent(file.name),
+                        },
+                        credentials: "include",
+                        duplex: "half",
+                        body: stream,
+                    }
+                );
+
+                if (!res.ok) {
+                    const result = await res.json();
+                    throw new Error(result?.error || "Failed to upload.");
+                }
             }
 
-            setMessage("Files uploaded successfully.");
-        } catch {
-            setMessage("Something went wrong.");
+            setMessage("All files uploaded successfully.");
+        } catch (err: any) {
+            setMessage(err.message || "Something went wrong.");
         }
     };
+
 
     const extractHashParams = () => {
         try {
@@ -80,6 +85,27 @@ function UploadPage() {
         return () => window.removeEventListener("hashchange", extractHashParams);
     }, []);
 
+
+    if (isLoading) {
+        return (
+            <div className="text-center mt-20 text-gray-500 font-medium">
+                Validating link...
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="text-center  bg-black w-full h-screen">
+                <p className="py-20 text-red-500 font-semibold">
+                    {
+                        error.message ?? 'This link has expired or is invalid.'
+                    }
+                </p>
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-2xl mx-auto mt-12 px-4">
             <h1 className="text-2xl font-semibold text-center mb-6">Upload Encrypted Files</h1>
@@ -94,8 +120,8 @@ function UploadPage() {
                             {...register("files")}
                             className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black rounded-sm"
                         />
-                        {errors.files && (
-                            <p className="text-sm text-red-600 mt-1">{errors.files.message}</p>
+                        {errors?.files && (
+                            <p className="text-sm text-red-600 mt-1">{errors?.files?.message}</p>
                         )}
                     </div>
 

@@ -7,6 +7,11 @@ import {
   ScrollRestoration,
 } from "react-router";
 
+import {
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
+
 import type { Route } from "./+types/root";
 import "./app.css";
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -57,11 +62,15 @@ function ClientOnly({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const queryClient = new QueryClient()
 
   return <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID} >
-     <ClientOnly>
+    <QueryClientProvider client={queryClient}>
+
+      <ClientOnly>
         <Outlet />
       </ClientOnly>
+    </QueryClientProvider>
 
   </GoogleOAuthProvider>;
 }

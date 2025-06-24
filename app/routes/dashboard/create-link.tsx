@@ -230,8 +230,7 @@ export default function CreateLinkPage() {
               Generate Secure Key
             </button>
           </div>
-
-
+            
           <button
             type="submit"
             disabled={isSubmitting}
