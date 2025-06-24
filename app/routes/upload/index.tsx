@@ -38,9 +38,10 @@ function UploadPage() {
         const files: File[] = Array.from(data.files);
 
         try {
-            for (const file of files) {
-                const stream = file.stream(); // Get ReadableStream
-
+            // we can use forEach here and call them at once
+            await Promise.all(files.map(async (file) => {
+                const stream = file.stream();
+            
                 const res = await fetch(
                     `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/stream?token=${token}`,
                     {
@@ -55,13 +56,13 @@ function UploadPage() {
                         body: stream,
                     }
                 );
-
+            
                 if (!res.ok) {
                     const result = await res.json();
                     throw new Error(result?.error || "Failed to upload.");
                 }
-            }
-
+            }));
+            
             setMessage("All files uploaded successfully.");
         } catch (err: any) {
             setMessage(err.message || "Something went wrong.");

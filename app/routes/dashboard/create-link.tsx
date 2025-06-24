@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { FaCopy } from "react-icons/fa";
 import { downloadKeyFile } from "~/utils/dowload-key";
+import { useAuth } from "~/zustand/store";
+import { useNavigate } from "react-router";
 
 export const createLinkSchema = z.object({
   maxUploads: z.number({ required_error: "Max uploads is required" }).min(1),
@@ -21,6 +23,7 @@ export default function CreateLinkPage() {
   const [uploadUrl, setUploadUrl] = useState<string | null>(null);
   const [relativeTime, setRelativeTime] = useState({ value: "", unit: "minutes" });
 
+  const navigate = useNavigate()
   const {
     register,
     handleSubmit,
@@ -52,11 +55,11 @@ export default function CreateLinkPage() {
       expiresAt = now.toISOString()
     }
 
-    const allowedFileTypes = watch('allowedFileType')
     const payload = {
       ...data,
       expiresAt,
-      allowedFileTypes
+      secretKey,
+      iv
     }
 
     try {
@@ -69,19 +72,25 @@ export default function CreateLinkPage() {
         body: JSON.stringify(payload),
       });
 
+      if (!res.ok || res.status === 401) {
+        useAuth.getState().setUser(null)
+        navigate('/auth')
+        return;
+      }
       const result = await res.json();
       // console.log(result);
       if (result.error) {
-        console.error(result.error);
+        console.error('err', result.error);
         return;
       }
 
       const safeKey = encodeURIComponent(secretKey);
       const safeIV = encodeURIComponent(iv);
       const fullLink = `${result.uploadUrl}#key=${safeKey}&iv=${safeIV}`;
-
-      setUploadUrl(fullLink);
-      downloadKeyFile(fullLink, secretKey, iv);
+      if (result) {
+        setUploadUrl(fullLink);
+        // downloadKeyFile(fullLink, secretKey, iv);
+      }
 
       // reset();
     } catch (err) {
@@ -128,33 +137,6 @@ export default function CreateLinkPage() {
               </p>
             )}
           </div>
-
-          {/* Allowed File Types */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Allowed File Types
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. image/png, video/mp4"
-              className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
-              onChange={(e) => {
-                const input = e.target.value;
-                const arr = input
-                  .split(",")
-                  .map((type) => type.trim())
-                  .filter((type) => type !== "");
-
-                setValue("allowedFileType", arr);
-              }}
-            />
-            {errors.allowedFileType && (
-              <p className="text-sm text-red-600 mt-1">
-                {errors.allowedFileType.message}
-              </p>
-            )}
-          </div>
-
 
           {/* Expires At */}
           <div>
@@ -230,7 +212,7 @@ export default function CreateLinkPage() {
               Generate Secure Key
             </button>
           </div>
-            
+
           <button
             type="submit"
             disabled={isSubmitting}

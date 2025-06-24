@@ -52,6 +52,7 @@ export const authCheck = async () => {
 
         if (!res.ok) {
             useAuth.getState().logout()
+            useAuth.getState().user(null)
         }
 
         const data = await res.json();
@@ -81,5 +82,25 @@ export function useValidateTokenQuery(token: string) {
         queryFn: () => fetchValidateToken(token),
         enabled: !!token,
         retry: false,
+    });
+}
+
+
+const fetchUserLinks = async () => {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link`, {
+        method: "GET",
+        credentials: 'include',
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to fetch user links");
+    }
+
+    return res.json();
+};
+export function useUserLinksQuery() {
+    return useQuery({
+        queryKey: ["user-links"],
+        queryFn: fetchUserLinks,
     });
 }
