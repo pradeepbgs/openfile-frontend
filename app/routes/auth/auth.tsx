@@ -27,12 +27,12 @@ export default function AuthPage() {
     return (
         <div>
             <Header />
-            <div className="min-h-screen flex items-center justify-center bg-gray-200 px-4">
+            <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
                 <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-md">
                     <h2 className="text-2xl font-bold mb-6 text-center text-black">
-                        {isSignup ? "Create an account" : "Welcome back"}
+                        {/* {isSignup ? "Create an account" : "Welcome back"} */}
                     </h2>
-                    <form
+                    {/* <form
                         className="space-y-4"
                         onSubmit={handleSubmit(onSubmit)}
                     >
@@ -65,8 +65,8 @@ export default function AuthPage() {
                         >
                             {isSignup ? "Sign Up" : "Login"}
                         </button>
-                    </form>
-
+                    </form> */}
+{/* 
                     <p className="text-center text-sm text-gray-600 mt-4">
                         {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
                         <button
@@ -75,13 +75,13 @@ export default function AuthPage() {
                         >
                             {isSignup ? "Login" : "Sign Up"}
                         </button>
-                    </p>
+                    </p> */}
 
-                    <div className="my-6 border-t border-gray-300 text-center relative">
+                    {/* <div className="my-6 border-t border-gray-300 text-center relative">
                         <span className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white px-2 text-gray-500 text-sm">
                             OR
                         </span>
-                    </div>
+                    </div> */}
 
                     <div className="flex justify-center">
 

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "~/zustand/store";
@@ -102,5 +102,30 @@ export function useUserLinksQuery() {
     return useQuery({
         queryKey: ["user-links"],
         queryFn: fetchUserLinks,
+    });
+}
+
+
+const uploadFiles = async ({ formData, iv , token}: { formData: FormData; iv: string; token: string }) => {
+
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file?token=${token}`, {
+        method: "POST",
+        body: formData,
+        headers: {
+            'X-IV': iv,
+        },
+        credentials: 'include',
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to upload files");
+    }
+
+    return res.json();
+};
+
+export function useUploadFilesMutation() {
+    return useMutation({
+        mutationFn: uploadFiles,
     });
 }

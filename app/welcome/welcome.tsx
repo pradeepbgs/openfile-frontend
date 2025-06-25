@@ -51,7 +51,7 @@ const howItWorks = [
 
 export function Welcome() {
   return (
-    <div className="min-h-screen flex flex-col bg-blue-100">
+    <div className="min-h-screen flex flex-col bg-gray-200">
       <Header />
       <main className="flex-grow">
         {/* Hero Section */}
