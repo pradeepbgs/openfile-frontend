@@ -106,7 +106,7 @@ export function useUserLinksQuery() {
 }
 
 
-const uploadFiles = async ({ formData, iv , token}: { formData: FormData; iv: string; token: string }) => {
+const uploadFiles = async ({ formData, iv, token }: { formData: FormData; iv: string; token: string }) => {
 
     const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file?token=${token}`, {
         method: "POST",
@@ -127,5 +127,28 @@ const uploadFiles = async ({ formData, iv , token}: { formData: FormData; iv: st
 export function useUploadFilesMutation() {
     return useMutation({
         mutationFn: uploadFiles,
+    });
+}
+
+
+const fetchUserFiles = async (token: string) => {
+    
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link/${token}/files`, {
+        method: "GET",
+        credentials: 'include',
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to fetch user files");
+    }
+
+    return res.json();
+}
+
+export function useUserFilesQuery(token: string) {
+    return useQuery({
+        queryKey: ["user-files"],
+        queryFn: () => fetchUserFiles(token),
+        enabled: !!token
     });
 }

@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useSearchParams } from "react-router";
 import Header from "~/components/header";
 import { useUploadFilesMutation, useValidateTokenQuery } from "~/service/api";
+import { encryptFile } from "~/utils/encrypt-files";
 import { useAuth } from "~/zustand/store";
 
 function UploadPage() {
@@ -49,7 +50,10 @@ function UploadPage() {
 
         const formData = new FormData();
         for (const file of files) {
-            formData.append("files", file);
+            const encryptedBlob = await encryptFile(file, key, iv);
+            const encryptedFile = new File([encryptedBlob], file.name, { type: file.type });
+           
+            formData.append("files", encryptedFile);
         }
         formData.append("key", key);
         formData.append("iv", iv);
@@ -110,7 +114,6 @@ function UploadPage() {
             </div>
         );
     }
-
     return (
         <div className="bg-gray-200 min-h-screen text-black">
             <Header />

@@ -7,7 +7,7 @@ import { downloadKeyFile } from "~/utils/dowload-key";
 import { useAuth } from "~/zustand/store";
 import { useNavigate } from "react-router";
 
-export const createLinkSchema = z.object({
+const createLinkSchema = z.object({
   maxUploads: z.number({ required_error: "Max uploads is required" }).min(1),
   allowedFileType: z.array(z.string()).optional(),
   expiresAt: z.string().datetime().optional(),
@@ -38,12 +38,6 @@ export default function CreateLinkPage() {
   const onSubmit = async (data: CreateLinkData) => {
     const secretKey = data.secretKey
     const iv = data.iv
-
-    // console.log(iv)
-    // if (!secretKey || !iv) {
-    //   alert("Please generate the encryption key and IV before creating the link.");
-    //   return;
-    // }
 
     let expiresAt: string | undefined;
     if (relativeTime.value) {
@@ -78,7 +72,6 @@ export default function CreateLinkPage() {
         return;
       }
       const result = await res.json();
-      // console.log(result);
       if (result.error) {
         console.error('err', result.error);
         return;
@@ -99,19 +92,19 @@ export default function CreateLinkPage() {
   };
 
   const generateKeyAndIV = (): void => {
-    const key = crypto.getRandomValues(new Uint8Array(32)); // AES-256
+    const key = crypto.getRandomValues(new Uint8Array(32));
     const iv = crypto.getRandomValues(new Uint8Array(16));
 
-    const base64Key = btoa(String.fromCharCode.apply(null, [...key]));
-    const base64IV = btoa(String.fromCharCode.apply(null, [...iv]))
+    const base64Key = btoa(String.fromCharCode(...key));
+    const base64IV = btoa(String.fromCharCode(...iv));
 
     setValue('secretKey', base64Key)
     setValue('iv', base64IV)
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4">
-      <h1 className="text-2xl font-semibold text-center mb-2">
+    <div className="max-w-6xl mx-auto p-6">
+      <h1 className="text-3xl font-extrabold text-center mb-6">
         Create Secure Upload Link
       </h1>
 
@@ -119,7 +112,7 @@ export default function CreateLinkPage() {
         {/* Form on the left */}
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="w-full max-w-md space-y-5 border border-gray-200 p-4"
+          className="w-full max-w-md space-y-5 border border-gray-200 p-6"
         >
           {/* Max Uploads */}
           <div>
@@ -163,19 +156,6 @@ export default function CreateLinkPage() {
               </select>
             </div>
           </div>
-
-          {/* <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 mt-4">
-              Or select custom date/time
-            </label>
-            <input
-              type="datetime-local"
-              // value={customDate}
-              // onChange={(e) => setCustomDate(e.target.value)}
-              className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
-            />
-          </div> */}
-
 
           {/* Secret Key */}
           <div>
