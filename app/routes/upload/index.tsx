@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useSearchParams } from "react-router";
 import type { FileItem } from "types/types";
 import Header from "~/components/header";
-import { getUploadUrl, useUploadFilesMutation, useValidateTokenQuery } from "~/service/api";
+import { getUploadUrl, useUpdateS3UploadDB, useUploadS3Mutation, useValidateTokenQuery } from "~/service/api";
 import { encryptFile } from "~/utils/encrypt-files";
 import { useAuth } from "~/zustand/store";
 
@@ -12,6 +12,7 @@ function UploadPage() {
     const [iv, setIV] = useState("");
     const [message, setMessage] = useState("");
     const [totalSize, setTotalSize] = useState(0);
+    const [showProgressMmessage, setShowProgressMessage] = useState('Upload Files')
 
     const [searchParams] = useSearchParams();
     const token = searchParams.get("token");
@@ -30,7 +31,8 @@ function UploadPage() {
 
     const { isError, isLoading, error } = useValidateTokenQuery(token || "");
 
-    const { mutate: uploadFiles, isPending, isSuccess, error: err } = useUploadFilesMutation()
+    const { mutate: uploadFiles, isPending, isSuccess, error: err } = useUploadS3Mutation()
+    const { mutate: UpdateDbS3 } = useUpdateS3UploadDB()
     const onSubmit = async (data: any) => {
         setMessage("");
         if (!data.files || data.files.length === 0) {
@@ -49,42 +51,28 @@ function UploadPage() {
             return;
         }
 
-        const formData = new FormData();
+        setShowProgressMessage('getting pre-signed upload url...')
+        // const formData = new FormData();
         for (const file of files) {
             try {
                 const { url, key: s3Key } = await getUploadUrl(file.type);
+                setShowProgressMessage('encrypting files...')
                 const encryptedBlob = await encryptFile(file, key, iv);
                 const encryptedFile = new File([encryptedBlob], file.name, {
                     type: file.type,
                 });
+                setShowProgressMessage('uploading files...')
+                await uploadFiles({ encryptFile: encryptedBlob, type: file.type, url })
+                setShowProgressMessage('updating db...')
+                await UpdateDbS3({ iv, s3Key, size: encryptedFile.size, token })
 
-                const s3Response = await fetch(url, {
-                    method: 'PUT',
-                    headers: {
-                        "Content-Type": file.type,
-                    },
-                    body: encryptFile
-                })
-                if (!s3Response.ok) {
-                    throw new Error("Failed to upload to S3");
-                }
-
-                await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/notify-upload?token=${token}`, {
-                    method: "POST",
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-IV": iv,
-                    },
-                    body: JSON.stringify({
-                        s3Key,
-                        fileSize: encryptedFile.size,
-                    }),
-                });
             } catch (error) {
                 console.error("Upload failed:", err);
                 setMessage("One or more files failed to upload.");
                 return;
+            }
+            finally {
+                setShowProgressMessage("Upload files")
             }
         }
     };
@@ -198,12 +186,12 @@ function UploadPage() {
                         <button
                             type="submit"
                             disabled={isPending || !files?.length}
-                            className={`w-full text-center py-2 rounded text-white text-sm ${isPending || !files?.length
+                            className={`w-full cursor-pointer text-center py-2 rounded text-white text-sm ${isPending || !files?.length
                                 ? "bg-gray-400 cursor-not-allowed"
                                 : "bg-black hover:bg-gray-900"
                                 }`}
                         >
-                            {isPending ? "Uploading..." : "Upload Files"}
+                            {showProgressMmessage}
                         </button>
 
                     </div>

@@ -131,6 +131,34 @@ export function useUploadFilesMutation() {
 }
 
 
+const uploadToS3 = async ({ encryptFile, url, type }: { encryptFile: Blob, url: string, type: string }) => {
+    try {
+        const s3Response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                "Content-Type": type,
+            },
+            body: encryptFile
+        })
+        if (!s3Response.ok) {
+            throw new Error("Failed to upload to S3");
+        }
+        return true
+    } catch (error) {
+        console.error("Error uploading to S3:", error);
+        throw error;
+    }
+}
+
+
+export function useUploadS3Mutation() {
+    return useMutation({
+        mutationFn: uploadToS3,
+    });
+}
+
+
+
 const fetchUserFiles = async (token: string) => {
 
     const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link/${token}/files`, {
@@ -169,3 +197,30 @@ export const getUploadUrl = async (mimeType: string) => {
 
     return res.json();
 };
+
+
+const updateS3UpoadDB = async ({ iv, s3Key, size, token }: { iv: string, s3Key: string, size: number, token: string }) => {
+    try {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/notify-upload?token=${token}`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "X-IV": iv,
+            },
+            body: JSON.stringify({
+                s3Key,
+                fileSize: size,
+            }),
+        });
+    } catch (error) {
+        console.log("got error while uodating db for s3 upload")
+        throw error;
+    }
+}
+
+export const useUpdateS3UploadDB = () => {
+    return useMutation({
+        mutationFn: updateS3UpoadDB,
+    });
+}
