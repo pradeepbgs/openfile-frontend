@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useSearchParams } from "react-router";
+import type { FileItem } from "types/types";
 import Header from "~/components/header";
-import { useUploadFilesMutation, useValidateTokenQuery } from "~/service/api";
+import { getUploadUrl, useUploadFilesMutation, useValidateTokenQuery } from "~/service/api";
 import { encryptFile } from "~/utils/encrypt-files";
 import { useAuth } from "~/zustand/store";
 
@@ -50,16 +51,42 @@ function UploadPage() {
 
         const formData = new FormData();
         for (const file of files) {
-            const encryptedBlob = await encryptFile(file, key, iv);
-            const encryptedFile = new File([encryptedBlob], file.name, { type: file.type });
-           
-            formData.append("files", encryptedFile);
+            try {
+                const { url, key: s3Key } = await getUploadUrl(file.type);
+                const encryptedBlob = await encryptFile(file, key, iv);
+                const encryptedFile = new File([encryptedBlob], file.name, {
+                    type: file.type,
+                });
+
+                const s3Response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        "Content-Type": file.type,
+                    },
+                    body: encryptFile
+                })
+                if (!s3Response.ok) {
+                    throw new Error("Failed to upload to S3");
+                }
+
+                await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/notify-upload?token=${token}`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-IV": iv,
+                    },
+                    body: JSON.stringify({
+                        s3Key,
+                        fileSize: encryptedFile.size,
+                    }),
+                });
+            } catch (error) {
+                console.error("Upload failed:", err);
+                setMessage("One or more files failed to upload.");
+                return;
+            }
         }
-        formData.append("key", key);
-        formData.append("iv", iv);
-        uploadFiles(
-            { formData, iv, token },
-        )
     };
 
 
@@ -87,7 +114,7 @@ function UploadPage() {
         }
 
         let size = 0;
-        const fileList = Array.from(files);
+        const fileList: FileItem[] = Array.from(files);
         for (const file of fileList) {
             size += file.size;
         }

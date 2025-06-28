@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { useLocation, useParams, useSearchParams } from 'react-router'
+import type { FileItem } from 'types/types';
 import { useUserFilesQuery } from '~/service/api'
 
 function link() {
     const [searchParams] = useSearchParams();
     const token = searchParams.get("token") ?? "";
+    const [showMessage, setShowMessage] = useState('Decrypt & Download')
 
     const location = useLocation();
     const hashParams = new URLSearchParams(location.hash.slice(1));
@@ -17,13 +19,13 @@ function link() {
     if (!data?.files) return <p className="p-4 text-gray-500">No files available.</p>;
 
     const files = data?.files
-    console.log(files)
-    const decryptAndDownload = async (fileurl: string, filename: string, ivFromFile: string) => {
+    const decryptAndDownload = async (fileurl: string, filename: string) => {
         try {
             const keyBytes = Uint8Array.from(atob(key), c => c.charCodeAt(0));
-            const ivBytes = Uint8Array.from(atob(ivFromFile), c => c.charCodeAt(0));
+            const ivBytes = Uint8Array.from(atob(iv), c => c.charCodeAt(0));
 
             const awskey = new URL(fileurl).pathname.slice(1);
+            setShowMessage('Downloading file...')
             const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/signed-url?key=${awskey}`);
             const data = await res.json();
             const fileRes = await fetch(data.url)
@@ -36,7 +38,7 @@ function link() {
                 false,
                 ['decrypt']
             );
-
+            setShowMessage("Decrypting file...")
             const decrypedBuffer = await crypto.subtle.decrypt(
                 { name: 'AES-CBC', iv: ivBytes },
                 cryptoKey,
@@ -52,6 +54,8 @@ function link() {
             URL.revokeObjectURL(url);
         } catch (error) {
             console.error('encryption failed', error);
+        } finally {
+            setShowMessage('Decrypt & Download')
         }
     }
 
@@ -60,17 +64,19 @@ function link() {
             <h1 className="text-2xl font-bold mb-4">Encrypted Files</h1>
             {files?.length === 0 && <p>No files found for this link.</p>}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {files?.map((file) => {
+                {files?.map((file: FileItem) => {
                     const filename = decodeURIComponent(file.url.split("/").pop() || "file.bin");
                     return (
                         <div key={file.id} className="border p-4 rounded-lg shadow space-y-2">
                             <p className="font-medium truncate">{filename}</p>
                             <p className="text-sm text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
                             <button
-                                className="w-full bg-blue-600 text-white py-1.5 rounded hover:bg-blue-700"
-                                onClick={() => decryptAndDownload(file.url, filename, file.iv)}
+                                className="w-full bg-blue-600 text-white py-1.5 rounded hover:bg-blue-700 cursor-pointer"
+                                onClick={() => decryptAndDownload(file.url, filename)}
                             >
-                                Decrypt & Download
+                                {
+                                    showMessage
+                                }
                             </button>
                         </div>
                     );
