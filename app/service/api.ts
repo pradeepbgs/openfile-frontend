@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useLocation, useNavigate } from "react-router";
+import type { createLinkArgs } from "types/types";
 import { useAuth } from "~/zustand/store";
 
 
@@ -182,8 +183,8 @@ export function useUserFilesQuery(token: string) {
 }
 
 
-export const getUploadUrl = async (mimeType: string) => {
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/upload-url`, {
+export const getUploadUrl = async (mimeType: string, token:string) => {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/upload-url?token=${token}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -222,5 +223,46 @@ const updateS3UpoadDB = async ({ iv, s3Key, size, token }: { iv: string, s3Key: 
 export const useUpdateS3UploadDB = () => {
     return useMutation({
         mutationFn: updateS3UpoadDB,
+    });
+}
+
+
+
+const createLink = async ( { payload, navigate, secretKey, iv }: createLinkArgs ): Promise<string | void> => {
+    try {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(payload),
+        });
+
+        if (res.status === 401) {
+            useAuth.getState().setUser(null)
+            navigate('/auth')
+            return;
+        }
+        const result = await res.json();
+        if (result.error) {
+            console.error('err', result.error);
+            throw result.error;
+        }
+
+        const safeKey = encodeURIComponent(secretKey);
+        const safeIV = encodeURIComponent(iv);
+        const fullLink = `${result.uploadUrl}#key=${safeKey}&iv=${safeIV}`;
+        return fullLink
+    } catch (error) {
+        console.log("got error during creating link ")
+        throw error;
+    }
+}
+
+export function useCreateLinkMutation() {
+    // const navigate = useNavigate();
+    return useMutation({
+        mutationFn: createLink,
     });
 }

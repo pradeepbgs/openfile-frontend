@@ -1,3 +1,5 @@
+import CryptoJS from 'crypto-js'
+
 export const encryptFile = async (
     file: File,
     keyBase64: string,
@@ -29,4 +31,46 @@ export const encryptFile = async (
         console.error("Error encrypting file:", error);
         throw error;
     }
+};
+
+
+export const ecn = (file: File, base64Key: string, base64Iv: string): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+        try {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const key = CryptoJS.enc.Base64.parse(base64Key);
+                    const iv = CryptoJS.enc.Base64.parse(base64Iv);
+                    const arrayBuffer = e.target?.result as ArrayBuffer;
+                    // Convert ArrayBuffer to WordArray (CryptoJS format)
+                    const wordArray = CryptoJS.lib.WordArray.create(arrayBuffer);
+
+                    const encrypted = CryptoJS.AES.encrypt(wordArray, key, {
+                        iv,
+                        mode: CryptoJS.mode.CBC,
+                        padding: CryptoJS.pad.Pkcs7,
+                    }).toString();
+
+                    const encryptedBlob = new Blob([encrypted], { type: 'application/octet-stream' });
+                    resolve(encryptedBlob);
+                } catch (innerError) {
+                    console.error("Error during encryption process:", innerError);
+                    reject(innerError);
+                }
+            };
+
+            reader.onerror = (error) => {
+                console.error("FileReader error:", error);
+                reject(error);
+            };
+
+            reader.readAsArrayBuffer(file);
+
+        } catch (outerError) {
+            console.error("Error setting up FileReader:", outerError);
+            reject(outerError);
+        }
+
+    });
 };

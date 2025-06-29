@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react'
-import { useLocation, useParams, useSearchParams } from 'react-router'
+import  { useState } from 'react'
+import { useLocation,  useSearchParams } from 'react-router'
 import type { FileItem } from 'types/types';
 import { useUserFilesQuery } from '~/service/api'
+import { decryptAndDownloadFile } from '~/utils/decrypt';
 
 function link() {
     const [searchParams] = useSearchParams();
@@ -14,50 +15,11 @@ function link() {
     const iv = hashParams.get("iv") ?? "";
     const { data, error, isLoading } = useUserFilesQuery(token);
 
+    const files = data?.files
+
     if (isLoading) return <p className="p-4">Loading files...</p>;
     if (error) return <p className="p-4 text-red-500">Error fetching files.</p>;
     if (!data?.files) return <p className="p-4 text-gray-500">No files available.</p>;
-
-    const files = data?.files
-    const decryptAndDownload = async (fileurl: string, filename: string) => {
-        try {
-            const keyBytes = Uint8Array.from(atob(key), c => c.charCodeAt(0));
-            const ivBytes = Uint8Array.from(atob(iv), c => c.charCodeAt(0));
-
-            const awskey = new URL(fileurl).pathname.slice(1);
-            setShowMessage('Downloading file...')
-            const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/signed-url?key=${awskey}`);
-            const data = await res.json();
-            const fileRes = await fetch(data.url)
-            const encryptedBuffer = await fileRes.arrayBuffer()
-
-            const cryptoKey = await crypto.subtle.importKey(
-                'raw',
-                keyBytes,
-                { name: 'AES-CBC' },
-                false,
-                ['decrypt']
-            );
-            setShowMessage("Decrypting file...")
-            const decrypedBuffer = await crypto.subtle.decrypt(
-                { name: 'AES-CBC', iv: ivBytes },
-                cryptoKey,
-                encryptedBuffer
-            )
-
-            const blob = new Blob([decrypedBuffer])
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('encryption failed', error);
-        } finally {
-            setShowMessage('Decrypt & Download')
-        }
-    }
 
     return (
         <div className="p-6 max-w-5xl mx-auto">
@@ -72,7 +34,7 @@ function link() {
                             <p className="text-sm text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
                             <button
                                 className="w-full bg-blue-600 text-white py-1.5 rounded hover:bg-blue-700 cursor-pointer"
-                                onClick={() => decryptAndDownload(file.url, filename)}
+                                onClick={() => decryptAndDownloadFile(file.url, filename, file.iv,key)}
                             >
                                 {
                                     showMessage

@@ -33,7 +33,9 @@ function Profile() {
         <h1 className="text-3xl font-extrabold text-gray-800">Welcome to your Dashboard</h1>
         <Link
           to="/dashboard/"
-          className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:scale-105"
+          className="inline-flex items-center px-4 py-2 bg-black text-white 
+          font-semibold rounded-lg shadow-md transition-all duration-300 ease-in-out 
+          transform hover:scale-105"
         >
           <FaPlus className="mr-2" /> Create New Link
         </Link>

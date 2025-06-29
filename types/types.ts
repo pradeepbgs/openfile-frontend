@@ -22,3 +22,18 @@ export interface FileItem {
   url: string
   userId: number
 }
+
+export interface createLinkArgs {
+  payload: CreateLinkPayload;
+  navigate: (path:string) => void; 
+  secretKey: string;
+  iv: string
+}
+
+export interface CreateLinkPayload {
+  maxUploads: number;
+  allowedFileType?: string[];
+  expiresAt?: string; 
+  secretKey: string;
+  iv: string;
+}

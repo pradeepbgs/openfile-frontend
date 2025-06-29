@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router";
 import type { FileItem } from "types/types";
 import Header from "~/components/header";
 import { getUploadUrl, useUpdateS3UploadDB, useUploadS3Mutation, useValidateTokenQuery } from "~/service/api";
-import { encryptFile } from "~/utils/encrypt-files";
+import { ecn, encryptFile } from "~/utils/encrypt-files";
 import { useAuth } from "~/zustand/store";
 
 function UploadPage() {
@@ -23,7 +23,7 @@ function UploadPage() {
     const {
         register,
         handleSubmit,
-        formState: { errors, isSubmitting },
+        formState: { errors },
         watch,
     } = useForm();
 
@@ -55,9 +55,9 @@ function UploadPage() {
         // const formData = new FormData();
         for (const file of files) {
             try {
-                const { url, key: s3Key } = await getUploadUrl(file.type);
+                const { url, key: s3Key, secretKey, iv:ivKey } = await getUploadUrl(file.type, token);
                 setShowProgressMessage('encrypting files...')
-                const encryptedBlob = await encryptFile(file, key, iv);
+                const encryptedBlob = await encryptFile(file, secretKey, ivKey);
                 const encryptedFile = new File([encryptedBlob], file.name, {
                     type: file.type,
                 });
