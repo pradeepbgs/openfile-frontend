@@ -8,6 +8,7 @@ import { useAuth } from "~/zustand/store";
 import { useNavigate } from "react-router";
 import { useCreateLinkMutation } from "~/service/api";
 import Spinner from "~/components/spinner";
+import { generate_KeyAndIV } from "~/utils/generate-key";
 
 const createLinkSchema = z.object({
   maxUploads: z.number({ required_error: "Max uploads is required" }).min(1),
@@ -76,14 +77,9 @@ export default function CreateLinkPage() {
   };
 
   const generateKeyAndIV = (): void => {
-    const key = crypto.getRandomValues(new Uint8Array(32));
-    const iv = crypto.getRandomValues(new Uint8Array(16));
-
-    const base64Key = btoa(String.fromCharCode(...key));
-    const base64IV = btoa(String.fromCharCode(...iv));
-
-    setValue('secretKey', base64Key)
-    setValue('iv', base64IV)
+    const { key, iv } = generate_KeyAndIV()
+    setValue('secretKey', key)
+    setValue('iv', iv)
   }
 
   return (

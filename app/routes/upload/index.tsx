@@ -5,6 +5,7 @@ import type { FileItem } from "types/types";
 import Header from "~/components/header";
 import { getUploadUrl, useUpdateS3UploadDB, useUploadS3Mutation, useValidateTokenQuery } from "~/service/api";
 import { ecn, encryptFile } from "~/utils/encrypt-files";
+import { encryptFile2 } from "~/utils/generate-key";
 import { useAuth } from "~/zustand/store";
 
 function UploadPage() {
@@ -57,7 +58,7 @@ function UploadPage() {
             try {
                 const { url, key: s3Key, secretKey, iv:ivKey } = await getUploadUrl(file.type, token);
                 setShowProgressMessage('encrypting files...')
-                const encryptedBlob = await encryptFile(file, secretKey, ivKey);
+                const encryptedBlob = await encryptFile2(file, secretKey, ivKey);
                 const encryptedFile = new File([encryptedBlob], file.name, {
                     type: file.type,
                 });
