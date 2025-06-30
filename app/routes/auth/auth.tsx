@@ -1,25 +1,20 @@
-import { useState } from "react";
 import Header from "~/components/header";
-import { useForm } from "react-hook-form";
-import type { z } from "zod";
-import { AuthSchema } from "~/zod/schema";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { GoogleLogin } from '@react-oauth/google';
 import { useGoogleLoginHandler } from "~/service/api";
 
-type AuthFormData = z.infer<typeof AuthSchema>
+// type AuthFormData = z.infer<typeof AuthSchema>
 
 export default function AuthPage() {
 
-    const [isSignup, setIsSignup] = useState(false);
+    // const [isSignup, setIsSignup] = useState(false);
 
-    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AuthFormData>({
-        resolver: zodResolver(AuthSchema),
-    })
+    // const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AuthFormData>({
+    //     resolver: zodResolver(AuthSchema),
+    // })
 
-    const onSubmit = async (data: AuthFormData) => {
-        // console.log(data);
-    };
+    // const onSubmit = async (data: AuthFormData) => {
+    //     console.log(data);
+    // };
 
     const handleGoogleLogin = useGoogleLoginHandler()
 

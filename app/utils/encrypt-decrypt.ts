@@ -1,3 +1,4 @@
+import { useFileStatusStore } from "~/zustand/fileStatusStore";
 
 export const generateKeyAndIVWithWebCrypto = async (): Promise<{ key: string; iv: string }> => {
     const key = await crypto.subtle.generateKey(
@@ -50,22 +51,23 @@ export const encryptFileWithWebCrypto = async (
 export const decryptAndDownloadFileWithCrypto = async (
     fileUrl: string,
     fileName: string,
-    iv: string,
-    key: string,
     token:string
 ) => {
     try {
         const awskey = new URL(fileUrl).pathname.slice(1);
+        useFileStatusStore.getState().updateFileStatus('getting signed URL..')
         const download_url = await fetch(
             `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/signed-url?key=${awskey}&token=${token}`,
             {
                 credentials:'include'
             }
         );
+        useFileStatusStore.getState().updateFileStatus("downloading files...")
         const data = await download_url.json();
         const res = await fetch(data.url);
+        
         const encryptedBuffer = await res.arrayBuffer()
-
+        useFileStatusStore.getState().updateFileStatus("decrypting files...")
         const decryptedBlob = await decryptFileWithWebCrypto(encryptedBuffer, data.link.secretKey, data.link.iv);
 
         const link = document.createElement("a");
@@ -74,6 +76,8 @@ export const decryptAndDownloadFileWithCrypto = async (
         link.click();
     } catch (error) {
         console.error("Error during decryption/download:", error);
+    } finally {
+        useFileStatusStore.getState().updateFileStatus("Decrypt & Download file")
     }
 };
 export const decryptFileWithWebCrypto = async (

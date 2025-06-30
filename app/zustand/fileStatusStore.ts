@@ -1,17 +1,14 @@
 import { create } from 'zustand';
 
 interface FileStatusState {
-    fileStatusMessages: { [key: string]: string };
-    updateFileStatus: (fileId: string, message: string) => void;
+    fileStatusMessages:string;
+    updateFileStatus: (message: string) => void;
 }
 
 export const useFileStatusStore = create<FileStatusState>((set) => ({
-    fileStatusMessages: {},
-    updateFileStatus: (fileId, message) =>
+    fileStatusMessages: 'Decrypt & Download',
+    updateFileStatus: ( message) =>
         set((state) => ({
-            fileStatusMessages: {
-                ...state.fileStatusMessages,
-                [fileId]: message,
-            },
+            fileStatusMessages:message,
         })),
 }));
