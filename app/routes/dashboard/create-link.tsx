@@ -9,6 +9,7 @@ import { useNavigate } from "react-router";
 import { useCreateLinkMutation } from "~/service/api";
 import Spinner from "~/components/spinner";
 import { generate_KeyAndIV } from "~/utils/generate-key";
+import { generateKeyAndIVWithWebCrypto } from "~/utils/encrypt-decrypt";
 
 const createLinkSchema = z.object({
   maxUploads: z.number({ required_error: "Max uploads is required" }).min(1),
@@ -76,8 +77,8 @@ export default function CreateLinkPage() {
     }
   };
 
-  const generateKeyAndIV = (): void => {
-    const { key, iv } = generate_KeyAndIV()
+  const generateKeyAndIV = async (): Promise<void> => {
+    const { key, iv } = await generateKeyAndIVWithWebCrypto()
     setValue('secretKey', key)
     setValue('iv', iv)
   }

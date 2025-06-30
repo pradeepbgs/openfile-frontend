@@ -200,7 +200,7 @@ export const getUploadUrl = async (mimeType: string, token:string) => {
 };
 
 
-const updateS3UpoadDB = async ({ iv, s3Key, size, token }: { iv: string, s3Key: string, size: number, token: string }) => {
+const updateS3UpoadDB = async ({ iv, s3Key, size, token , filename }: { iv: string, s3Key: string, size: number, token: string , filename:string}) => {
     try {
         const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/notify-upload?token=${token}`, {
             method: "POST",
@@ -212,8 +212,13 @@ const updateS3UpoadDB = async ({ iv, s3Key, size, token }: { iv: string, s3Key: 
             body: JSON.stringify({
                 s3Key,
                 fileSize: size,
+                name:filename
             }),
         });
+        if (!res.ok) {
+            throw new Error("got error while uodating db for s3 upload")
+        }
+        
     } catch (error) {
         console.log("got error while uodating db for s3 upload")
         throw error;
