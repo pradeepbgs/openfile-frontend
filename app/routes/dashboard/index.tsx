@@ -16,9 +16,10 @@ const DashboardLayout = () => {
       <Sidebar />
 
       {/* Main content */}
-      <main className="flex-1bg-gray-200">
+      <main className="flex-1 bg-gray-50 p-6 min-h-screen">
         <Outlet />
       </main>
+
     </div>
   );
 };

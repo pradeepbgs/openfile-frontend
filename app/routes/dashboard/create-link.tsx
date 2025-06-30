@@ -84,7 +84,7 @@ export default function CreateLinkPage() {
   }
 
   return (
-    <div className="p-6 ml-20">
+    <div className="">
       <div className="flex flex-col justify-center items-center">
         <h1 className="text-3xl font-extrabold text-center mb-6">
           Create Secure Upload Link

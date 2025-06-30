@@ -53,7 +53,7 @@ export const authCheck = async () => {
 
         if (!res.ok) {
             useAuth.getState().logout()
-            useAuth.getState().user(null)
+            useAuth.getState().setUser(null)
         }
 
         const data = await res.json();
