@@ -14,6 +14,7 @@ export interface LinkItem {
 export interface FileItem {
   createdAt: string
   id:number
+  name: string;
   iv: string
   keyUsed: boolean
   size:number
