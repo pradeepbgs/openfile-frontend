@@ -1,20 +1,24 @@
 import React from 'react'
 import { FaCopy } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import type { LinkItem } from 'types/types';
-
+import { formatDistanceToNow, isBefore } from 'date-fns';
+import AlertMenu from './alert-menu';
 
 function UserLinks({ links }: { links: LinkItem[] }) {
-
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     const handleCopyLink = (linkToCopy: string) => {
         navigator.clipboard.writeText(linkToCopy);
     };
 
-    const route = (link:LinkItem) => {
-        navigate(`/dashboard/link?token=${link.token}#key=${link.secretKey}&iv=${link.iv}`)
-    }
+    const route = (link: LinkItem) => {
+        navigate(`/dashboard/link?token=${link.token}#key=${link.secretKey}&iv=${link.iv}`);
+    };
+
+    const handleLinkDelete = (id: number) => {
+        // API call to delete the link
+    };
 
     return (
         <div>
@@ -32,9 +36,7 @@ function UserLinks({ links }: { links: LinkItem[] }) {
                     <tbody className="bg-white divide-y divide-gray-200">
                         {links.length > 0 ? (
                             links.map((link: LinkItem) => {
-                                const fullLink = `${import.meta.env.VITE_UPLOAD_URL}?token=${link.token}#key=${encodeURIComponent(
-                                    link.secretKey
-                                )}&iv=${encodeURIComponent(link.iv)}`;
+                                const fullLink = `${import.meta.env.VITE_UPLOAD_URL}?token=${link.token}#key=${encodeURIComponent(link.secretKey)}&iv=${encodeURIComponent(link.iv)}`;
 
                                 return (
                                     <tr key={link.id} className="hover:bg-gray-50 transition-colors duration-200">
@@ -60,12 +62,14 @@ function UserLinks({ links }: { links: LinkItem[] }) {
                                             {link.uploadCount} / {link.maxUploads === 0 ? 'Unlimited' : link.maxUploads}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {link.expiresAt ? link.expiresAt : 'Never'}
+                                            {link.expiresAt
+                                                ? isBefore(new Date(link.expiresAt), new Date())
+                                                    ? `Expired ${formatDistanceToNow(new Date(link.expiresAt))} ago`
+                                                    : `in ${formatDistanceToNow(new Date(link.expiresAt))}`
+                                                : 'Never'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <button className="text-red-600 hover:text-red-900 transition-colors duration-200" onClick={() => {/* Add delete logic here */ }}>
-                                                Delete
-                                            </button>
+                                            <AlertMenu onConfirm={() => handleLinkDelete(link.id)} />
                                         </td>
                                     </tr>
                                 );
@@ -81,7 +85,7 @@ function UserLinks({ links }: { links: LinkItem[] }) {
                 </table>
             </div>
         </div>
-    )
+    );
 }
 
-export default React.memo(UserLinks)
+export default React.memo(UserLinks);

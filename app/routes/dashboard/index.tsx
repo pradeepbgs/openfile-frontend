@@ -1,15 +1,20 @@
 import { Outlet, useNavigate } from "react-router";
 import { useAuth } from "~/zustand/store";
 import Sidebar from "~/components/sidebar";
+import { useEffect } from "react";
 
 
 
 const DashboardLayout = () => {
   const navigate = useNavigate()
   const user = useAuth.getState().user?.email
-  // if (!user) {
-  //   return navigate('/auth')
-  // }
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth')
+    }
+  }, [])
+
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}

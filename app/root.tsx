@@ -17,6 +17,8 @@ import "./app.css";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useEffect, useState } from "react";
 import { authCheck } from "./service/api";
+import "@radix-ui/themes/styles.css";
+import { Theme } from "@radix-ui/themes";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -68,7 +70,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
 
       <ClientOnly>
+        <Theme>
         <Outlet />
+        </Theme>
       </ClientOnly>
     </QueryClientProvider>
 

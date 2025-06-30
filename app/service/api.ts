@@ -64,6 +64,24 @@ export const authCheck = async () => {
 }
 
 
+export const logout = async () => {
+    try {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/auth/logout`, {
+            method: "GET",
+            credentials: 'include'
+        });
+
+        if (!res.ok) {
+            throw new Error("Logout failed");
+        }
+
+        useAuth.getState().logout()
+        useAuth.getState().setUser(null)
+    } catch (err) {
+        console.error("Logout error:", err);
+    }
+}
+
 const fetchValidateToken = async (token: string) => {
     const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link/validate?token=${token}`, {
         method: "GET",
@@ -183,7 +201,7 @@ export function useUserFilesQuery(token: string) {
 }
 
 
-export const getUploadUrl = async (mimeType: string, token:string) => {
+export const getUploadUrl = async (mimeType: string, token: string) => {
     const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/upload-url?token=${token}`, {
         method: "POST",
         headers: {
@@ -200,7 +218,7 @@ export const getUploadUrl = async (mimeType: string, token:string) => {
 };
 
 
-const updateS3UpoadDB = async ({ iv, s3Key, size, token , filename }: { iv: string, s3Key: string, size: number, token: string , filename:string}) => {
+const updateS3UpoadDB = async ({ iv, s3Key, size, token, filename }: { iv: string, s3Key: string, size: number, token: string, filename: string }) => {
     try {
         const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/notify-upload?token=${token}`, {
             method: "POST",
@@ -212,13 +230,13 @@ const updateS3UpoadDB = async ({ iv, s3Key, size, token , filename }: { iv: stri
             body: JSON.stringify({
                 s3Key,
                 fileSize: size,
-                name:filename
+                name: filename
             }),
         });
         if (!res.ok) {
             throw new Error("got error while uodating db for s3 upload")
         }
-        
+
     } catch (error) {
         console.log("got error while uodating db for s3 upload")
         throw error;
@@ -233,7 +251,7 @@ export const useUpdateS3UploadDB = () => {
 
 
 
-const createLink = async ( { payload, navigate, secretKey, iv }: createLinkArgs ): Promise<string | void> => {
+const createLink = async ({ payload, navigate, secretKey, iv }: createLinkArgs): Promise<string | void> => {
     try {
         const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link`, {
             method: "POST",
