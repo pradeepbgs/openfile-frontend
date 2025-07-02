@@ -85,6 +85,7 @@ export const decryptAndDownloadFileWithCrypto = async (
         );
         useFileStatusStore.getState().updateFileStatus("downloading files...")
         const data = await download_url.json();
+
         const res = await fetch(data.url);
         const encryptedBuffer = await res.arrayBuffer()
         useFileStatusStore.getState().updateFileStatus("decrypting files...")

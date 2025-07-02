@@ -24,8 +24,8 @@ function LinkPage() {
     const handleDecryptDownload = async (file: FileItem) => {
         setDecryptingFileId(file.id);
         try {
-            const fileName = decodeURIComponent(file.url.split('/').pop() || "file.bin");
-            await decryptAndDownloadFileWithCrypto(file, fileName, token, key);
+            // const fileName = decodeURIComponent(file.url.split('/').pop() || "file.bin");
+            await decryptAndDownloadFileWithCrypto(file, file.name, token, key);
         } finally {
             setDecryptingFileId(null);
         }

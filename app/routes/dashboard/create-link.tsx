@@ -106,7 +106,7 @@ export default function CreateLinkPage() {
               <input
                 type="number"
                 {...register("maxUploads", { valueAsNumber: true })}
-                className="w-24 border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                className="w-24 border rounded-sm border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
               />
               {errors.maxUploads && (
                 <p className="text-sm text-red-600 mt-1">
@@ -128,7 +128,7 @@ export default function CreateLinkPage() {
                   onChange={(e) =>
                     setRelativeTime({ ...relativeTime, value: e.target.value })
                   }
-                  className="w-24 border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                  className="w-24 border rounded-sm border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
                 />
                 <select
                   value={relativeTime.unit}
@@ -138,7 +138,7 @@ export default function CreateLinkPage() {
                       unit: e.target.value as TimeUnit,
                     })
                   }
-                  className="border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                  className="border rounded-sm border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
                 >
                   <option value="minutes">Minutes</option>
                   <option value="hours">Hours</option>
@@ -157,7 +157,7 @@ export default function CreateLinkPage() {
               <input
                 type="text"
                 {...register("secretKey")}
-                className="w-full border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                className="w-full border rounded-sm border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
               />
               {errors.secretKey && (
                 <p className="text-sm text-red-600 mt-1">
@@ -172,7 +172,7 @@ export default function CreateLinkPage() {
               <input
                 type="text"
                 {...register("iv")}
-                className="w-full border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                className="w-full border rounded-sm border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
               />
             </div>
           </div>
