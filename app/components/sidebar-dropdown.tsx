@@ -8,11 +8,6 @@ import { logout } from '~/service/api'
 
 const tabs = [
     {
-        name: "My Profile",
-        icon: <FaUser />,
-        navigateTo: '/dashboard/profile'
-    },
-    {
         name: "Premium Pro",
         icon: <MdWorkspacePremium className="text-yellow-500" />,
         navigateTo: '/dashboard/premium'

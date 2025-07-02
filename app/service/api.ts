@@ -178,11 +178,13 @@ export function useUploadS3Mutation() {
 
 
 
-const fetchUserFiles = async (token: string) => {
-
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link/${token}/files`, {
+const fetchUserFiles = async (token: string, key: string) => {
+    // const encodedKey = encodeURIComponent(key);
+    const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/${token}/files?page=${1}&limit=${10}&key=${key}`, {
         method: "GET",
         credentials: 'include',
+        // body:JSON.stringify({key})
     });
 
     if (!res.ok) {
@@ -192,29 +194,35 @@ const fetchUserFiles = async (token: string) => {
     return res.json();
 }
 
-export function useUserFilesQuery(token: string) {
+export function useUserFilesQuery(token: string, key: string) {
     return useQuery({
         queryKey: ["user-files"],
-        queryFn: () => fetchUserFiles(token),
+        queryFn: () => fetchUserFiles(token, key),
         enabled: !!token
     });
 }
 
 
 export const getUploadUrl = async (mimeType: string, token: string) => {
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/upload-url?token=${token}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ mimeType }),
-    });
+    try {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/upload-url?token=${token}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ mimeType }),
+        });
 
-    if (!res.ok) {
-        throw new Error("Failed to get upload URL");
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data?.error || "Failed to get upload URL");
+        }
+
+        return data;
+    } catch (error) {
+        console.log('got error during getting upload pre-signed url', error)
+        throw error
     }
-
-    return res.json();
 };
 
 
@@ -273,9 +281,9 @@ const createLink = async ({ payload, navigate, secretKey, iv }: createLinkArgs):
             throw result.error;
         }
 
-        const safeKey = encodeURIComponent(secretKey);
-        const safeIV = encodeURIComponent(iv);
-        const fullLink = `${result.uploadUrl}#key=${safeKey}&iv=${safeIV}`;
+        // const safeKey = encodeURIComponent(secretKey);
+        // const safeIV = encodeURIComponent(iv);
+        const fullLink = `${result.uploadUrl}#key=${secretKey}&iv=${iv}`;
         return fullLink
     } catch (error) {
         console.log("got error during creating link ")

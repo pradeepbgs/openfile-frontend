@@ -2,6 +2,7 @@ import type { Route } from "./+types/home";
 import Header from "~/components/header";
 import { motion } from "framer-motion";
 import bg from 'public/bg2.png';
+import Footer from "~/components/footer";
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -125,9 +126,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-black text-center text-sm py-6 text-gray-500">
-        © {new Date().getFullYear()} OpenFile. Built by spicemen.
-      </footer>
+      <Footer />
     </div>
   );
 }
