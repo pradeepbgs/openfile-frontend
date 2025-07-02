@@ -17,7 +17,7 @@ const MAX_FREE_USER_UPLOAD_MB = import.meta.env.VIET_MAX_FREE_USER_UPLOAD_MB ?? 
 function UploadPage() {
     const [key, setKey] = useState<string>("");
     const [iv, setIV] = useState<string>("");
-    const [message, setMessage] = useState<string>("");
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [totalSize, setTotalSize] = useState<number>(0);
     const [displayProgressMessage, setDisplayProgressMessage] = useState<string>('Upload Files');
 
@@ -31,7 +31,7 @@ function UploadPage() {
         );
     }
 
-    const user = useAuth.getState().user
+    const user = useAuth.getState().user;
     const isFreeUser = user?.plan === "FREE";
 
     const {
@@ -53,10 +53,9 @@ function UploadPage() {
         mutateAsync: uploadFilesMutation,
         isPending: isUploading,
         isSuccess: isUploadSuccess,
-        error: uploadError
-    } = useUploadS3Mutation()
+    } = useUploadS3Mutation();
 
-    const { mutateAsync: UpdateDbS3 } = useUpdateS3UploadDB()
+    const { mutateAsync: UpdateDbS3 } = useUpdateS3UploadDB();
 
     const extractHashParams = useCallback(() => {
         try {
@@ -65,31 +64,34 @@ function UploadPage() {
             setIV(decodeURIComponent(hashParams.get("iv") || ""));
         } catch (error) {
             console.error("Error extracting hash parameters from URL:", error);
-            setMessage("Failed to load encryption details from URL.");
+            setErrorMessage("Failed to load encryption details from URL.");
         }
     }, []);
 
     const onSubmit = async (data: any) => {
-        setMessage("");
+        setErrorMessage(""); 
+
         if (!data.files || data.files.length === 0) {
-            setMessage("Please select at least one file.");
+            setErrorMessage("Please select at least one file.");
             return;
         }
+
         if (!key || !iv) {
-            setMessage("Missing encryption key or IV.");
+            setErrorMessage("Missing encryption key or IV.");
             return;
         }
 
         const files: File[] = Array.from(data.files);
         const maxTotalSize = isFreeUser ? MAX_FREE_USER_UPLOAD_MB * 1024 * 1024 : Infinity;
+
         if (totalSize > maxTotalSize) {
-            setMessage(`Free users can only upload up to 200MB. Your total is ${(totalSize / 1024 / 1024).toFixed(2)}MB.`);
+            setErrorMessage(`Free users can only upload up to 200MB. Your total is ${(totalSize / 1024 / 1024).toFixed(2)}MB.`);
             return;
         }
 
-        setDisplayProgressMessage('getting pre-signed upload URL...')
         for (const file of files) {
             try {
+                setDisplayProgressMessage('Getting pre-signed upload URL...');
                 const { url, key: s3Key, secretKey, iv: ivKey } = await getUploadUrl(file.type, token);
 
                 setDisplayProgressMessage(`Encrypting ${file.name}...`);
@@ -99,30 +101,27 @@ function UploadPage() {
                 });
 
                 setDisplayProgressMessage(`Uploading ${file.name}...`);
-                await uploadFilesMutation({ encryptFile: encryptedBlob, type: file.type, url })
+                await uploadFilesMutation({ encryptFile: encryptedBlob, type: file.type, url });
 
                 setDisplayProgressMessage(`Updating database for ${file.name}...`);
-                await UpdateDbS3({ iv, s3Key, size: encryptedFile.size, token , filename:file.name })
+                await UpdateDbS3({ iv, s3Key, size: encryptedFile.size, token, filename: file.name });
 
-                setMessage("All files uploaded successfully!");
             } catch (error) {
                 console.error("Upload process failed:", error);
                 const errorMessage = (error instanceof Error) ? error.message : "An unexpected error occurred.";
-                setMessage(`Upload failed: ${errorMessage}. Please try again.`);
-            }
-            finally {
+                setErrorMessage(`Upload failed: ${errorMessage}`);
+                break;
+            } finally {
                 setDisplayProgressMessage("Upload Files");
             }
         }
     };
-
 
     useEffect(() => {
         extractHashParams();
         window.addEventListener("hashchange", extractHashParams);
         return () => window.removeEventListener("hashchange", extractHashParams);
     }, []);
-
 
     useEffect(() => {
         if (!files || files.length === 0) {
@@ -138,7 +137,6 @@ function UploadPage() {
         setTotalSize(size);
     }, [files]);
 
-
     if (isTokenValidating) {
         return (
             <div className="text-center mt-20 text-gray-500 font-medium">
@@ -149,32 +147,29 @@ function UploadPage() {
 
     if (isTokenInvalid) {
         return (
-            <div className="text-center  bg-black w-full h-screen">
+            <div className="text-center bg-black w-full h-screen">
                 <p className="py-20 text-red-500 font-semibold">
-                    {
-                        tokenValidationError.message ?? 'This link has expired or is invalid.'
-                    }
+                    {tokenValidationError.message ?? 'This link has expired or is invalid.'}
                 </p>
             </div>
         );
     }
-    
+
     return (
         <div className="bg-gray-200 min-h-screen text-black">
             <Header />
             <div className="max-w-2xl mx-auto py-12 px-4">
-
                 <h1 className="text-2xl font-semibold text-center mb-6">Upload Encrypted Files</h1>
 
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="border border-gray-300 p-6 rounded-lg shadow-sm space-y-6">
-                        <div>
-                            {isFreeUser && (
-                                <p className="text-sm text-gray-500 mb-2">
-                                    Free users can upload up to {MAX_FREE_USER_UPLOAD_MB}MB in total.
-                                </p>
-                            )}
+                        {isFreeUser && (
+                            <p className="text-sm text-gray-500 mb-2">
+                                Free users can upload up to {MAX_FREE_USER_UPLOAD_MB}MB in total.
+                            </p>
+                        )}
 
+                        <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Select Files</label>
                             <input
                                 type="file"
@@ -188,10 +183,10 @@ function UploadPage() {
                                 </p>
                             )}
                         </div>
+
                         <p className="text-sm text-gray-500">
                             Total size: {(totalSize / (1024 * 1024)).toFixed(2)} MB
                         </p>
-
 
                         <div>
                             {key && iv ? (
@@ -207,23 +202,22 @@ function UploadPage() {
                             </p>
                         )}
 
-                        {uploadError && (
+                        {errorMessage && (
                             <p className="text-sm text-red-600 text-center">
-                                {uploadError instanceof Error ? uploadError.message : "Something went wrong during upload."}
+                                {errorMessage}
                             </p>
                         )}
 
                         <button
                             type="submit"
                             disabled={isUploading || !files?.length}
-                            className={`w-full cursor-pointer text-center py-2 rounded text-white text-sm ${isUploading || !files?.length
+                            className={`w-full text-center py-2 rounded text-white text-sm ${isUploading || !files?.length
                                 ? "bg-gray-400 cursor-not-allowed"
                                 : "bg-black hover:bg-gray-900"
                                 }`}
                         >
                             {displayProgressMessage}
                         </button>
-
                     </div>
                 </form>
             </div>

@@ -1,6 +1,26 @@
+import type { FileItem } from "types/types";
 import { useFileStatusStore } from "~/zustand/fileStatusStore";
 
+const toBase64URL = (bytes: Uint8Array): string => {
+    const base64 = btoa(String.fromCharCode(...bytes));
+    return base64
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+};
+
+const base64UrlToBase64 = (base64url: string): string => {
+    let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4 !== 0) {
+        base64 += '=';
+    }
+    return base64;
+};
+
+
+
 export const generateKeyAndIVWithWebCrypto = async (): Promise<{ key: string; iv: string }> => {
+
     const key = await crypto.subtle.generateKey(
         {
             name: "AES-CBC",
@@ -11,12 +31,12 @@ export const generateKeyAndIVWithWebCrypto = async (): Promise<{ key: string; iv
     );
 
     const exportedKey = await crypto.subtle.exportKey("raw", key);
-    const keyBase64 = btoa(String.fromCharCode(...new Uint8Array(exportedKey)));
+    const keyBase64URL = toBase64URL(new Uint8Array(exportedKey));
 
     const iv = crypto.getRandomValues(new Uint8Array(16));
-    const ivBase64 = btoa(String.fromCharCode(...iv));
+    const ivBase64URL = toBase64URL(iv);
 
-    return { key: keyBase64, iv: ivBase64 };
+    return { key: keyBase64URL, iv: ivBase64URL };
 };
 
 
@@ -25,8 +45,8 @@ export const encryptFileWithWebCrypto = async (
     base64Key: string,
     base64IV: string
 ) => {
-    const keyBytes = Uint8Array.from(atob(base64Key), c => c.charCodeAt(0));
-    const ivBytes = Uint8Array.from(atob(base64IV), c => c.charCodeAt(0));
+    const keyBytes = Uint8Array.from(atob(base64UrlToBase64(base64Key)), c => c.charCodeAt(0));
+    const ivBytes = Uint8Array.from(atob(base64UrlToBase64(base64IV)), c => c.charCodeAt(0));
 
     const cryptoKey = await crypto.subtle.importKey(
         "raw",
@@ -49,26 +69,26 @@ export const encryptFileWithWebCrypto = async (
 
 
 export const decryptAndDownloadFileWithCrypto = async (
-    fileUrl: string,
+    file: FileItem,
     fileName: string,
-    token:string
+    token: string,
+    key: string
 ) => {
     try {
-        const awskey = new URL(fileUrl).pathname.slice(1);
+        const awskey = new URL(file?.url).pathname.slice(1);
         useFileStatusStore.getState().updateFileStatus('getting signed URL..')
         const download_url = await fetch(
-            `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/signed-url?key=${awskey}&token=${token}`,
+            `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/signed-url?s3key=${awskey}&token=${token}&secretKey=${key}&fileId=${file.id}`,
             {
-                credentials:'include'
+                credentials: 'include'
             }
         );
         useFileStatusStore.getState().updateFileStatus("downloading files...")
         const data = await download_url.json();
         const res = await fetch(data.url);
-        
         const encryptedBuffer = await res.arrayBuffer()
         useFileStatusStore.getState().updateFileStatus("decrypting files...")
-        const decryptedBlob = await decryptFileWithWebCrypto(encryptedBuffer, data.link.secretKey, data.link.iv);
+        const decryptedBlob = await decryptFileWithWebCrypto(encryptedBuffer, data.file.secretKey, data.file.iv);
 
         const link = document.createElement("a");
         link.href = URL.createObjectURL(decryptedBlob);
@@ -85,9 +105,9 @@ export const decryptFileWithWebCrypto = async (
     base64Key: string,
     base64IV: string
 ): Promise<Blob> => {
-    const keyBytes = Uint8Array.from(atob(base64Key), c => c.charCodeAt(0));
-    const ivBytes = Uint8Array.from(atob(base64IV), c => c.charCodeAt(0));
-    
+    const keyBytes = Uint8Array.from(atob(base64UrlToBase64(base64Key)), c => c.charCodeAt(0));
+    const ivBytes = Uint8Array.from(atob(base64UrlToBase64(base64IV)), c => c.charCodeAt(0));
+
     const cryptoKey = await crypto.subtle.importKey(
         "raw",
         keyBytes,

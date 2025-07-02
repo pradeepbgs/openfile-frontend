@@ -17,16 +17,19 @@ const createLinkSchema = z.object({
   iv: z.string().min(1),
 });
 
-
 type CreateLinkData = z.infer<typeof createLinkSchema>;
 type TimeUnit = "minutes" | "hours" | "days";
 
 export default function CreateLinkPage() {
   const [uploadUrl, setUploadUrl] = useState<string | null>(null);
-  const [relativeTime, setRelativeTime] = useState<Record<string, string>>({ value: "", unit: "minutes" });
+  const [relativeTime, setRelativeTime] = useState<Record<string, string>>({
+    value: "",
+    unit: "minutes",
+  });
   const [shouldDownloadKey, setShouldDownloadKey] = useState<boolean>(false);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -37,17 +40,15 @@ export default function CreateLinkPage() {
     resolver: zodResolver(createLinkSchema),
   });
 
-
   const {
     mutateAsync: createLink,
     isError: isCreateLinkError,
     error: createLinkError,
     isPending: isCreateLinkPending,
-  } = useCreateLinkMutation()
+  } = useCreateLinkMutation();
 
   const onSubmit = async (data: CreateLinkData) => {
-    const secretKey = data.secretKey
-    const iv = data.iv
+    const { secretKey, iv } = data;
 
     let expiresAt: string | undefined;
     if (relativeTime.value) {
@@ -56,52 +57,48 @@ export default function CreateLinkPage() {
       if (relativeTime.unit === "minutes") now.setMinutes(now.getMinutes() + amount);
       if (relativeTime.unit === "hours") now.setHours(now.getHours() + amount);
       if (relativeTime.unit === "days") now.setDate(now.getDate() + amount);
-      expiresAt = now.toISOString()
+      expiresAt = now.toISOString();
     }
 
     const payload = {
       ...data,
       expiresAt,
       secretKey,
-      iv
-    }
+      iv,
+    };
+
     try {
-      const fullLink: string | void = await createLink({ iv, navigate, payload, secretKey });
+      const fullLink = await createLink({ iv, navigate, payload, secretKey });
       if (fullLink) {
         setUploadUrl(fullLink);
         shouldDownloadKey && downloadKeyFile(fullLink, secretKey, iv);
       }
-
-      // reset();
     } catch (err) {
       console.error("Failed to create link");
     }
   };
 
-  const generateKeyAndIV = async (): Promise<void> => {
-    const { key, iv } = await generateKeyAndIVWithWebCrypto()
-    setValue('secretKey', key)
-    setValue('iv', iv)
-  }
+  const generateKeyAndIV = async () => {
+    const { key, iv } = await generateKeyAndIVWithWebCrypto();
+    setValue("secretKey", key);
+    setValue("iv", iv);
+  };
 
-  const handleCheckboxChange = (e:any) => {
+  const handleCheckboxChange = (e: any) => {
     setShouldDownloadKey(e.target.checked);
   };
 
   return (
-    <div className="flex flex-col justify-center items-center">
-      <h1 className="text-3xl font-extrabold text-center mb-6">
+    <div className="flex flex-col justify-center items-center px-4 py-6">
+      <h1 className="md:text-3xl text-[1.3rem] font-extrabold text-center mb-6">
         Create Secure Upload Link
       </h1>
 
-      <div className=" gap-8 border border-gray-800 rounded-md">
-        {/* Form on the left */}
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="w-fit  space-y-5 p-6"
-        >
-          <div className="flex gap-1.5">
-            {/* Max Uploads */}
+      <div className="max-w-5xl gap-6 border border-gray-300 rounded-md p-6 shadow-md bg-white">
+        {/* FORM */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {/* Uploads + Expiry */}
+          <div className="flex flex-col md:flex-row gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Max Uploads
@@ -118,7 +115,6 @@ export default function CreateLinkPage() {
               )}
             </div>
 
-            {/* Expires At */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Expires In
@@ -129,12 +125,19 @@ export default function CreateLinkPage() {
                   min={1}
                   placeholder="1"
                   value={relativeTime.value}
-                  onChange={(e) => setRelativeTime({ ...relativeTime, value: e.target.value })}
+                  onChange={(e) =>
+                    setRelativeTime({ ...relativeTime, value: e.target.value })
+                  }
                   className="w-24 border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
                 />
                 <select
                   value={relativeTime.unit}
-                  onChange={(e) => setRelativeTime({ ...relativeTime, unit: e.target.value as TimeUnit })}
+                  onChange={(e) =>
+                    setRelativeTime({
+                      ...relativeTime,
+                      unit: e.target.value as TimeUnit,
+                    })
+                  }
                   className="border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
                 >
                   <option value="minutes">Minutes</option>
@@ -145,88 +148,77 @@ export default function CreateLinkPage() {
             </div>
           </div>
 
-          <div className="">
-            <div className="flex gap-3">
-              {/* Secret Key */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Secret Key
-                </label>
-                <input
-                  type="text"
-                  {...register("secretKey")}
-                  className="w-fit border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
-                />
-                {errors.secretKey && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {errors.secretKey.message}
-                  </p>
-                )}
-
-              </div>
-              {/* iv key*/}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Initialization Vector (IV)
-                </label>
-                <input
-                  type="text"
-                  {...register("iv")}
-                  className="w-fit border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
-                />
-              </div>
+          {/* Secret Key + IV */}
+          <div className="flex flex-col md:flex-row gap-3">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Secret Key
+              </label>
+              <input
+                type="text"
+                {...register("secretKey")}
+                className="w-full border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              />
+              {errors.secretKey && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.secretKey.message}
+                </p>
+              )}
             </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Initialization Vector (IV)
+              </label>
+              <input
+                type="text"
+                {...register("iv")}
+                className="w-full border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              />
+            </div>
+          </div>
 
-            {/* check box and generate key button */}
-            <div>
+          {/* Download checkbox + Generate key */}
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center">
               <input
                 type="checkbox"
                 checked={shouldDownloadKey}
                 onChange={handleCheckboxChange}
               />
-              <label className="ml-2">download key & iv?</label>
-              <button
-                type="button"
-                onClick={generateKeyAndIV}
-                className="mt-1 ml-5 text-xs text-white px-2 py-2 rounded-sm hover:bg-gray-900 cursor-pointer 
-              bg-black hover:scale-103 transition-transform duration-300"
-              >
-                Generate Secure Key
-              </button>
+              <label className="ml-2 text-sm">Download key & IV?</label>
             </div>
-
+            <button
+              type="button"
+              onClick={generateKeyAndIV}
+              className="text-xs text-white px-3 py-2 rounded-sm bg-black hover:bg-gray-900 transition-transform duration-300"
+            >
+              Generate Secure Key
+            </button>
           </div>
 
-          {/* submit btn */}
+          {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full cursor-pointer text-center 
-            rounded-md bg-black text-white py-2 text-sm hover:bg-gray-900 
-            hover:scale-103 transition-transform duration-300
-            "
+            className="w-full cursor-pointer text-center rounded-md bg-black text-white py-2 text-sm hover:bg-gray-900 transition-transform duration-300"
           >
-            {
-              isCreateLinkPending
-                ? <Spinner size={15} />
-                : "Generate Link"
-            }
+            {isCreateLinkPending ? <Spinner size={15} /> : "Generate Link"}
           </button>
         </form>
 
-        {/* showing error and links */}
-        {isCreateLinkError ?
-          <p className="text-red-600 text-center mb-2">{createLinkError}</p>
+        {/* OUTPUT LINK */}
+        <div className="space-y-4 mt-4">
+          {isCreateLinkError && (
+            <p className="text-red-600 text-center">{createLinkError}</p>
+          )}
 
-          : <div className="w-full max-w-md border border-gray-200 rounded-md ml-25 p-2  mb-2 text-sm">
+          <div className="w-full border border-gray-200 rounded-md p-4 text-sm break-all">
             {uploadUrl ? (
               <div className="flex items-start gap-4">
                 <FaCopy
-                  size={27}
-                  className="mt-1 cursor-pointer text-gray-600 hover:text-black"
-                  onClick={() => {
-                    navigator.clipboard.writeText(uploadUrl);
-                  }}
+                  size={22}
+                  className="mt-1 cursor-pointer text-gray-600 hover:text-black  "
+                  onClick={() => navigator.clipboard.writeText(uploadUrl)}
                 />
                 <a
                   href={uploadUrl}
@@ -238,11 +230,12 @@ export default function CreateLinkPage() {
                 </a>
               </div>
             ) : (
-              <p className="text-gray-500">Your generated link will appear here.</p>
+              <p className="text-gray-500">
+                Your generated link will appear here.
+              </p>
             )}
           </div>
-        }
-
+        </div>
       </div>
     </div>
   );

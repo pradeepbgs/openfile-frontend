@@ -8,25 +8,21 @@ import { useEffect } from "react";
 const DashboardLayout = () => {
   const navigate = useNavigate()
   const user = useAuth.getState().user?.email
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth')
-    }
-  }, [])
 
+  // useEffect(() => {
+  //   if (!user) navigate('/auth')
+  // }, [])
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
+    <div className="relative flex min-h-screen">
       <Sidebar />
 
-      {/* Main content */}
-      <main className="flex-1 bg-gray-50 p-6 min-h-screen">
+      <main className="flex-1 bg-gray-50 p-4 md:p-6 min-h-screen overflow-auto">
         <Outlet />
       </main>
-
     </div>
   );
 };
+
 
 export default DashboardLayout;

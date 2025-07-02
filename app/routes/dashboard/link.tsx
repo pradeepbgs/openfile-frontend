@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
-import type { FileItem } from 'types/types';
 import { useUserFilesQuery } from '~/service/api';
 import { decryptAndDownloadFileWithCrypto } from '~/utils/encrypt-decrypt';
 import { useFileStatusStore } from '~/zustand/fileStatusStore';
+import type { FileItem } from 'types/types';
+import { FileCard } from '~/components/file-card';
 
 function LinkPage() {
     const [searchParams] = useSearchParams();
     const token = searchParams.get("token") ?? "";
     const [decryptingFileId, setDecryptingFileId] = useState<number | null>(null);
 
-    const { data, error, isLoading } = useUserFilesQuery(token);
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const key = hashParams.get("key") || "";
+    const { data, error, isLoading } = useUserFilesQuery(token, key);
     const files = data?.files;
+    const msg = useFileStatusStore.getState().fileStatusMessages;
 
     if (isLoading) return <p className="p-4">Loading files...</p>;
     if (error) return <p className="p-4 text-red-500">Error fetching files.</p>;
@@ -20,34 +24,26 @@ function LinkPage() {
     const handleDecryptDownload = async (file: FileItem) => {
         setDecryptingFileId(file.id);
         try {
-            await decryptAndDownloadFileWithCrypto(file.url, decodeURIComponent(file.url.split('/').pop() || "file.bin"), token);
+            const fileName = decodeURIComponent(file.url.split('/').pop() || "file.bin");
+            await decryptAndDownloadFileWithCrypto(file, fileName, token, key);
         } finally {
             setDecryptingFileId(null);
         }
     };
 
-    const msg = useFileStatusStore.getState().fileStatusMessages
     return (
-        <div className="p-6 max-w-5xl mx-auto">
-            <h1 className="text-2xl font-bold mb-4">Encrypted Files</h1>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {files.map((file: FileItem) => {
-                    const isDecrypting = decryptingFileId === file.id;
-
-                    return (
-                        <div key={file.id} className="border p-4 rounded-lg shadow space-y-2">
-                            <p className="font-medium truncate">{file.name}</p>
-                            <p className="text-sm text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
-                            <button
-                                className="w-full bg-blue-600 text-white py-1.5 rounded hover:bg-blue-700 cursor-pointer"
-                                onClick={() => handleDecryptDownload(file)}
-                                disabled={isDecrypting}
-                            >
-                                {isDecrypting ? msg : 'Decrypt & Download'}
-                            </button>
-                        </div>
-                    );
-                })}
+        <div className="p-6 max-w-6xl mx-auto">
+            <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Your Encrypted Files</h1>
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {files.map((file: FileItem) => (
+                    <FileCard
+                        key={file.id}
+                        file={file}
+                        onDownload={() => handleDecryptDownload(file)}
+                        isDecrypting={decryptingFileId === file.id}
+                        decryptMsg={msg}
+                    />
+                ))}
             </div>
         </div>
     );
