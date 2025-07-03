@@ -4,22 +4,17 @@ import { useUserLinksQuery } from "~/service/api";
 import type { LinkItem } from "types/types";
 import UserLinks from "~/components/user-links";
 import UserStats from "~/components/user-stats";
+import Spinner from "~/components/spinner";
 
 
 function Profile() {
   const { data, isLoading, error } = useUserLinksQuery();
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-gray-600 text-lg">Loading your links...</p>
-      </div>
-    );
-  }
+  if(isLoading) return <Spinner size={28}/>
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="h-full flex justify-center items-center">
         <p className="text-red-500 text-lg">Error loading links. Please try again later.</p>
       </div>
     );

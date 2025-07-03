@@ -50,6 +50,7 @@ export default function CreateLinkPage() {
   const onSubmit = async (data: CreateLinkData) => {
     const { secretKey, iv } = data;
 
+    // i want here that if expiresAt is undefined then set it to next 10 minutes
     let expiresAt: string | undefined;
     if (relativeTime.value) {
       const now = new Date();
@@ -58,6 +59,11 @@ export default function CreateLinkPage() {
       if (relativeTime.unit === "hours") now.setHours(now.getHours() + amount);
       if (relativeTime.unit === "days") now.setDate(now.getDate() + amount);
       expiresAt = now.toISOString();
+    }
+    else {
+      const now = new Date()
+      now.setMinutes(now.getMinutes() + 10)
+      expiresAt = now.toISOString()
     }
 
     const payload = {
@@ -94,9 +100,9 @@ export default function CreateLinkPage() {
         Create Secure Upload Link
       </h1>
 
-      <div className="max-w-5xl gap-6 border border-gray-300 rounded-md p-6 shadow-md bg-white">
+      <div className="max-w-5xl md:w-[60%] gap-6 border border-gray-300 rounded-md p-6 shadow-md bg-white">
         {/* FORM */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 ">
           {/* Uploads + Expiry */}
           <div className="flex flex-col md:flex-row gap-4">
             <div>

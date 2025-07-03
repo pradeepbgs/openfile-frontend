@@ -5,6 +5,7 @@ import { decryptAndDownloadFileWithCrypto } from '~/utils/encrypt-decrypt';
 import { useFileStatusStore } from '~/zustand/fileStatusStore';
 import type { FileItem } from 'types/types';
 import { FileCard } from '~/components/file-card';
+import Spinner from '~/components/spinner';
 
 function LinkPage() {
     const [searchParams] = useSearchParams();
@@ -17,8 +18,8 @@ function LinkPage() {
     const files = data?.files;
     const msg = useFileStatusStore.getState().fileStatusMessages;
 
-    if (isLoading) return <p className="p-4">Loading files...</p>;
-    if (error) return <p className="p-4 text-red-500">Error fetching files.</p>;
+    if (isLoading) return <Spinner size={28}/>
+    if (error) return <p className="h-full flex justify-center items-center p-4 text-red-500">Error fetching files.</p>;
     if (!files?.length) return <p className="p-4 text-gray-500">No files available.</p>;
 
     const handleDecryptDownload = async (file: FileItem) => {

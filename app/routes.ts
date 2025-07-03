@@ -12,4 +12,5 @@ export default [
         route('link', 'routes/dashboard/link.tsx'),
     ]),
     route('upload', 'routes/upload/index.tsx'),
+    route('/*','components/not-found.tsx')
 ] satisfies RouteConfig;
