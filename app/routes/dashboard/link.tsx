@@ -8,46 +8,45 @@ import { FileCard } from '~/components/file-card';
 import Spinner from '~/components/spinner';
 
 function LinkPage() {
-    const [searchParams] = useSearchParams();
-    const token = searchParams.get("token") ?? "";
-    const [decryptingFileId, setDecryptingFileId] = useState<number | null>(null);
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token") ?? "";
+  const [decryptingFileId, setDecryptingFileId] = useState<number | null>(null);
 
-    const hashParams = new URLSearchParams(window.location.hash.slice(1));
-    const key = hashParams.get("key") || "";
-    const { data, error, isLoading } = useUserFilesQuery(token, key);
-    const files = data?.files;
-    const msg = useFileStatusStore.getState().fileStatusMessages;
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
+  const key = hashParams.get("key") || "";
+  const { data, error, isLoading } = useUserFilesQuery(token, key);
+  const files = data?.files;
+  const msg = useFileStatusStore.getState().fileStatusMessages;
 
-    if (isLoading) return <Spinner size={28}/>
-    if (error) return <p className="h-full flex justify-center items-center p-4 text-red-500">Error fetching files.</p>;
-    if (!files?.length) return <p className="p-4 text-gray-500">No files available.</p>;
+  if (isLoading) return <div className="min-h-screen flex justify-center items-center"><Spinner size={28} /></div>;
+  if (error) return <p className="h-full flex justify-center items-center p-4 text-red-400">Error fetching files.</p>;
+  if (!files?.length) return <p className="p-4 text-gray-400">No files available.</p>;
 
-    const handleDecryptDownload = async (file: FileItem) => {
-        setDecryptingFileId(file.id);
-        try {
-            // const fileName = decodeURIComponent(file.url.split('/').pop() || "file.bin");
-            await decryptAndDownloadFileWithCrypto(file, file.name, token, key);
-        } finally {
-            setDecryptingFileId(null);
-        }
-    };
+  const handleDecryptDownload = async (file: FileItem) => {
+    setDecryptingFileId(file.id);
+    try {
+      await decryptAndDownloadFileWithCrypto(file, file.name, token, key);
+    } finally {
+      setDecryptingFileId(null);
+    }
+  };
 
-    return (
-        <div className="p-6 max-w-6xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Your Encrypted Files</h1>
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {files.map((file: FileItem) => (
-                    <FileCard
-                        key={file.id}
-                        file={file}
-                        onDownload={() => handleDecryptDownload(file)}
-                        isDecrypting={decryptingFileId === file.id}
-                        decryptMsg={msg}
-                    />
-                ))}
-            </div>
-        </div>
-    );
+  return (
+    <div className="p-6 max-w-6xl mx-auto min-h-screen text-white">
+      <h1 className="text-3xl font-bold mb-6 text-center text-white">Your Encrypted Files</h1>
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {files.map((file: FileItem) => (
+          <FileCard
+            key={file.id}
+            file={file}
+            onDownload={() => handleDecryptDownload(file)}
+            isDecrypting={decryptingFileId === file.id}
+            decryptMsg={msg}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default LinkPage;
