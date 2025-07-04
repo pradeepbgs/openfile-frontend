@@ -21,7 +21,7 @@ export default function Sidebar() {
       {/* Hamburger for mobile */}
       {!sidebarOpen &&
         <button
-          className="md:hidden p-3 text-2xl absolute left-2 z-50"
+          className="md:hidden p-3 text-2xl absolute left-2 z-50 bg-[#1e1e2f]"
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
           <FiMenu />
@@ -29,13 +29,13 @@ export default function Sidebar() {
 
       <aside
         className={` flex flex-col justify-between gap-90
-          fixed top-0 left-0 h-full w-64 bg-white p-4 border-r-2 border-gray-200 z-40 
+          fixed top-0 left-0 h-[100vh] w-64 bg-[#1a1b26] p-4 border-r-2 border-gray-200 z-40 
           transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
           md:relative md:translate-x-0 
         `}
       >
-        <div>
+        <div className='text-white'>
           <h2 className="text-xl font-bold mb-4">
             <Link to={'/'}>OpenFile</Link>
           </h2>
@@ -46,7 +46,8 @@ export default function Sidebar() {
                 to={tab.path}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200
-                  ${isActive ? "bg-black text-white font-semibold" : "text-gray-700 hover:bg-gray-100 hover:text-black"}`
+                  ${isActive ? "bg-indigo-600 text-white font-semibold shadow"
+                    : "text-gray-300 hover:bg-[#2a2b3d] hover:text-white"}`
                 }
               >
                 {tab.icon}
@@ -58,7 +59,7 @@ export default function Sidebar() {
 
         {/* user icon */}
         <div
-          className="py-3 rounded-lg bg-gray-200 hover:bg-gray-300 transition-all p-2 relative"
+          className="py-3 rounded-lg bg-[#2a2b3d] text-white cursor-pointer hover:bg-[#34364a] transition-all p-2 relative"
           onClick={() => setDropdownOpen(!dropdownOpen)}
         >
           <button className='flex gap-3 items-center w-full'>
