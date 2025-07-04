@@ -7,7 +7,7 @@ import UserStats from "~/components/user-stats";
 import Spinner from "~/components/spinner";
 
 function Profile() {
-  const { data, isLoading, error } = useUserLinksQuery();
+  const { data, isLoading, error, refetch } = useUserLinksQuery();
 
   if (isLoading) return <div className="min-h-screen flex justify-center items-center"><Spinner size={28} /></div>;
 
@@ -20,6 +20,10 @@ function Profile() {
   }
 
   const links: LinkItem[] = data?.links || [];
+
+  const handleRefresh = async () => {
+    await refetch();
+  }
 
   return (
     <div className="min-h-screen bg-[#14151c] text-white px-4 md:px-10 py-6 md:py-10">
@@ -42,7 +46,7 @@ function Profile() {
 
       {/* Recent Links */}
       <div>
-        <UserLinks links={links} />
+        <UserLinks links={links} handleRefresh={handleRefresh} />
       </div>
     </div>
   );
