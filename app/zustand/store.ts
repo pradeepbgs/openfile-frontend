@@ -6,7 +6,7 @@ export interface User {
     email: string;
     name:string;
     avatar: string
-    plan: 'FREE' | 'PAID'
+    plan: 'free' | 'paid'
 };
 
 type AuthStore = {

@@ -1,16 +1,14 @@
 import React from 'react'
 import { FiLogOut } from 'react-icons/fi'
 import { MdWorkspacePremium } from 'react-icons/md'
-import { FaUser } from 'react-icons/fa'
 import { useNavigate } from 'react-router'
-import { useAuth } from '~/zustand/store'
 import { logout } from '~/service/api'
 
 const tabs = [
     {
         name: "Premium Pro",
         icon: <MdWorkspacePremium className="text-yellow-500" />,
-        navigateTo: '/dashboard/premium'
+        navigateTo: '/plan'
     }
 ]
 
