@@ -21,10 +21,12 @@ export default function Sidebar() {
       {/* Hamburger for mobile */}
       {!sidebarOpen &&
         <button
-          className="md:hidden p-3 text-2xl absolute left-2 z-50 bg-[#1e1e2f]"
+          className="md:hidden p-3 text-2xl absolute left-2 z-50 "
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
-          <FiMenu />
+          <FiMenu 
+          color='white'
+          />
         </button>}
 
       <aside

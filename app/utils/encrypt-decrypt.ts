@@ -9,7 +9,7 @@ const toBase64URL = (bytes: Uint8Array): string => {
         .replace(/=+$/, '');
 };
 
-const base64UrlToBase64 = (base64url: string): string => {
+export const base64UrlToBase64 = (base64url: string): string => {
     let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
     while (base64.length % 4 !== 0) {
         base64 += '=';
@@ -101,27 +101,38 @@ export const decryptAndDownloadFileWithCrypto = async (
         useFileStatusStore.getState().updateFileStatus("Decrypt & Download file")
     }
 };
+
 export const decryptFileWithWebCrypto = async (
     encryptedData: ArrayBuffer,
     base64Key: string,
     base64IV: string
-): Promise<Blob> => {
-    const keyBytes = Uint8Array.from(atob(base64UrlToBase64(base64Key)), c => c.charCodeAt(0));
-    const ivBytes = Uint8Array.from(atob(base64UrlToBase64(base64IV)), c => c.charCodeAt(0));
-
-    const cryptoKey = await crypto.subtle.importKey(
-        "raw",
-        keyBytes,
-        { name: "AES-CBC" },
-        false,
-        ["decrypt"]
+  ): Promise<Blob> => {
+    const worker = new Worker(
+      new URL('./decryptWorker.ts', import.meta.url),
+      { type: 'module' }
     );
-
-    const decryptedBuffer = await crypto.subtle.decrypt(
-        { name: "AES-CBC", iv: ivBytes },
-        cryptoKey,
-        encryptedData
-    );
-
+  
+    const decryptWithWorker = (): Promise<ArrayBuffer> => {
+      return new Promise((resolve, reject) => {
+        worker.onmessage = (event) => {
+          if (event.data.error) {
+            reject(event.data.error);
+          } else {
+            resolve(event.data.decryptedBuffer);
+          }
+          worker.terminate();
+        };
+  
+        worker.onerror = (err) => {
+          reject("Worker error: " + err.message);
+          worker.terminate();
+        };
+  
+        worker.postMessage({ base64Key, base64IV, encryptedData });
+      });
+    };
+  
+    const decryptedBuffer = await decryptWithWorker();
     return new Blob([decryptedBuffer]);
-};
+  };
+  

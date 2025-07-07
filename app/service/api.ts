@@ -83,13 +83,11 @@ export const logout = async () => {
 }
 
 const fetchValidateToken = async (token: string,secretKey:string,iv:string) => {
-    console.log('called')
-    console.log('secretKey',secretKey)
+
     const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link/validate?token=${token}&secretKey=${secretKey}&iv=${iv}`, {
         method: "GET",
         credentials: 'include',
     });
-    console.log(res)
     if (!res.ok) {
         throw new Error("Invalid or expired token");
     }

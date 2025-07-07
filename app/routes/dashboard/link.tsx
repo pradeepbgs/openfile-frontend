@@ -34,8 +34,11 @@ function LinkPage() {
   return (
     <div className="p-6 max-w-6xl mx-auto min-h-screen text-white">
       <h1 className="text-3xl font-bold mb-6 text-center text-white">Your Encrypted Files</h1>
+
       <h3 className="text-sm text-yellow-400 text-center mb-4 max-w-3xl mx-auto">
-        ⚠️ Please note: When you click "Decrypt", the file will first be downloaded and then decrypted in your browser. This process may take some time depending on the file size and your device performance. Please do not close or refresh the tab while decryption is in progress.
+        ⚠️ Please note: When you click "Decrypt", the file will first be downloaded and then decrypted in your browser.
+        This process may take some time depending on the file size and your device performance.
+        Please do not close or refresh the tab while decryption is in progress.
       </h3>
 
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
