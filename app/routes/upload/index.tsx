@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useSearchParams } from "react-router";
 import type { FileItem } from "types/types";
@@ -9,7 +9,6 @@ import {
   useUploadS3Mutation,
   useValidateTokenQuery,
 } from "~/service/api";
-import { encryptFileWithWebCrypto } from "~/utils/encrypt-decrypt";
 import { useAuth } from "~/zustand/store";
 
 const MAX_FREE_USER_UPLOAD_MB = import.meta.env.VIET_MAX_FREE_USER_UPLOAD_MB ?? 200 as number;
@@ -84,13 +83,38 @@ function UploadPage() {
       return;
     }
 
-    for (const file of files) {
-      try {
+    // create a worker
+    const worker = new Worker(
+      new URL("../../utils/encryptWorker.ts", import.meta.url),
+      { type: "module" }
+    );
+
+    const encryptFileWithWorker = (file: File, secretKey: string, iv: string):Promise<Blob> => {
+      return new Promise((resolve, reject) => {
+        worker.postMessage({ file, secretKey, iv });
+
+        worker.onerror = (err) => {
+          reject("Worker error: " + err.message);
+        };
+
+        worker.onmessage = (event) => {
+          if (event.data.error) {
+            reject(event.data.error);
+          } else {
+            resolve(event.data);
+          }
+        };
+      })
+    }
+
+    try {
+      for (const file of files) {
         setDisplayProgressMessage("Getting pre-signed upload URL...");
-        const { url, key: s3Key, secretKey, iv: ivKey } = await getUploadUrl(file.type, token);
+        const { url, key: s3Key, secretKey } = await getUploadUrl(file.type, token);
 
         setDisplayProgressMessage(`Encrypting ${file.name}...`);
-        const encryptedBlob = await encryptFileWithWebCrypto(file, secretKey, ivKey);
+        const encryptedBlob = await encryptFileWithWorker(file, secretKey, iv);
+
         const encryptedFile = new File([encryptedBlob], file.name, {
           type: file.type,
         });
@@ -100,16 +124,18 @@ function UploadPage() {
 
         setDisplayProgressMessage(`Updating database for ${file.name}...`);
         await UpdateDbS3({ iv, s3Key, size: encryptedFile.size, token, filename: file.name });
-      } catch (error) {
-        console.error("Upload process failed:", error);
-        const message = error instanceof Error ? error.message : "An unexpected error occurred.";
-        setErrorMessage(`Upload failed: ${message}`);
-        break;
-      } finally {
-        setDisplayProgressMessage("Upload Files");
       }
+
+      setDisplayProgressMessage("All files uploaded successfully!");
+    } catch (error) {
+      console.error("Upload process failed:", error);
+      const message = error instanceof Error ? error.message : String(error);
+      setErrorMessage(`Upload failed: ${message}`);
+    } finally {
+      worker.terminate();
+      setDisplayProgressMessage("Upload Files");
     }
-  };
+  }
 
   if (!token)
     return (
@@ -120,7 +146,6 @@ function UploadPage() {
 
 
   if (isTokenValidating) return <div className="text-center mt-20 text-gray-400">Validating link...</div>;
-
 
   if (isTokenInvalid) {
     return (
