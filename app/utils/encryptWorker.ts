@@ -1,4 +1,4 @@
-import { encryptFileWithWebCrypto } from "~/utils/encrypt-decrypt";
+import { encryptFileWithWebCrypto } from "../utils/encrypt-decrypt";
 
 self.onmessage = async function (e) {
     const { file, secretKey, iv } = e.data;

@@ -1,5 +1,5 @@
 import type { FileItem } from "types/types";
-import { useFileStatusStore } from "~/zustand/fileStatusStore";
+import { useFileStatusStore } from "../zustand/fileStatusStore";
 
 const toBase64URL = (bytes: Uint8Array): string => {
     const base64 = btoa(String.fromCharCode(...bytes));
