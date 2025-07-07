@@ -212,9 +212,13 @@ export default function CreateLinkPage() {
 
         {/* OUTPUT LINK */}
         <div className="space-y-4 mt-4">
+
           {isCreateLinkError && (
-            <p className="text-red-400 text-center">{createLinkError}</p>
+            <p className="text-red-400 text-center">
+              {createLinkError instanceof Error ? createLinkError.message : String(createLinkError)}
+            </p>
           )}
+
 
           <div className="w-full border border-neutral-600 rounded-md p-4 text-sm break-words bg-[#2a2b3d] text-white">
             {uploadUrl ? (

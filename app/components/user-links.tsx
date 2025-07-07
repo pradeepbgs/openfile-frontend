@@ -1,11 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { FaCopy } from 'react-icons/fa';
 import { useNavigate } from 'react-router';
 import type { LinkItem } from 'types/types';
 import { formatDistanceToNow, isBefore } from 'date-fns';
 import AlertMenu from './alert-menu';
+import { IoMdRefresh } from "react-icons/io";
 
-function UserLinks({ links }: { links: LinkItem[] }) {
+function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh: () => void }) {
+  const [spinning, setSpinning] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const handleCopyLink = (linkToCopy: string) => {
@@ -20,6 +22,19 @@ function UserLinks({ links }: { links: LinkItem[] }) {
     // API call to delete the link
   };
 
+  const handleRefreshLink = async () => {
+    setSpinning(true)
+    try {
+      handleRefresh()
+    } catch (error: any) {
+      console.error("Refresh failed", error?.message)
+    } finally {
+      setTimeout(() => {
+        setSpinning(false)
+      }, 300);
+    }
+  }
+
   return (
     <div>
       <h2 className="text-2xl font-bold text-white mb-6">Your Recent Links</h2>
@@ -27,7 +42,18 @@ function UserLinks({ links }: { links: LinkItem[] }) {
         <table className="min-w-full divide-y divide-neutral-700">
           <thead className="bg-[#2a2b3d]">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Link Details</th>
+              <th className="px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                <button
+                  onClick={handleRefreshLink}
+                  className="cursor-pointer mr-3 relative  hover:text-indigo-400 text-white"
+                >
+                  <IoMdRefresh
+                    size={20}
+                    className={`transition-transform duration-500 ${spinning ? 'animate-spin' : ''}`}
+                  />
+                </button>
+                Link Details
+              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Uploads</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Expires</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>

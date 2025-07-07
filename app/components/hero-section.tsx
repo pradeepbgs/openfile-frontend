@@ -4,7 +4,7 @@ import bg from 'public/bg2.png'
 
 function HeroSection() {
   return (
-    <section className="py-16 px-4 bg-[#1b1c20]">
+    <section className="py-16 px-4 bg-[#0f0f16]">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
         <div>
           <img src={bg} alt="File Upload" className="w-full max-h-[450px] object-cover rounded-md" />

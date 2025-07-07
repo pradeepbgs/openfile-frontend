@@ -5,6 +5,7 @@ import Footer from "~/components/footer";
 import HeroSection from "~/components/hero-section";
 import HowItWorks from "~/components/how-it-works";
 import Features from "~/components/features";
+import PlansPage from "./dashboard/plan";
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -15,13 +16,14 @@ export function meta({ }: Route.MetaArgs) {
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#121212] text-white">
+    <div className="min-h-screen flex flex-col bg-[#0f0f16] text-white">
       <Header />
       <main className="flex-grow">
         <HeroSection />
         <HowItWorks />
         <Features />
 
+        <PlansPage />
         {/* Final CTA */}
         <section className="py-24 bg-black text-white text-center px-4">
           <h2 className="text-4xl font-bold">Ready to simplify anonymous file sharing?</h2>

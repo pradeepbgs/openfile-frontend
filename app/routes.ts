@@ -11,6 +11,7 @@ export default [
         route('settings', 'routes/dashboard/settings.tsx'),
         route('link', 'routes/dashboard/link.tsx'),
     ]),
+    route('plan','routes/dashboard/plan.tsx'),
     route('upload', 'routes/upload/index.tsx'),
     route('/*','components/not-found.tsx')
 ] satisfies RouteConfig;

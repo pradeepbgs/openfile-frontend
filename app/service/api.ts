@@ -82,12 +82,14 @@ export const logout = async () => {
     }
 }
 
-const fetchValidateToken = async (token: string) => {
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link/validate?token=${token}`, {
+const fetchValidateToken = async (token: string,secretKey:string,iv:string) => {
+    console.log('called')
+    console.log('secretKey',secretKey)
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link/validate?token=${token}&secretKey=${secretKey}&iv=${iv}`, {
         method: "GET",
         credentials: 'include',
     });
-
+    console.log(res)
     if (!res.ok) {
         throw new Error("Invalid or expired token");
     }
@@ -95,10 +97,10 @@ const fetchValidateToken = async (token: string) => {
     return res.json();
 };
 
-export function useValidateTokenQuery(token: string) {
+export function useValidateTokenQuery(token: string,secretKey:string,iv:string) {
     return useQuery({
         queryKey: ["validate-token", token],
-        queryFn: () => fetchValidateToken(token),
+        queryFn: () => fetchValidateToken(token,secretKey,iv),
         enabled: !!token,
         retry: false,
     });

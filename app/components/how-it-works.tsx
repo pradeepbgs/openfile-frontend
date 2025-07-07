@@ -9,12 +9,12 @@ const howItWorksArr = [
 
 function HowItWorks() {
   return (
-    <section id="how" className="py-24 px-4 bg-[#121212] text-white">
+    <section id="how" className="py-24 px-4 bg-[#0f0f16] text-white">
       <div className="max-w-6xl mx-auto text-center">
         <h2 className="text-4xl font-bold mb-12">How It Works</h2>
         <div className="grid md:grid-cols-4 gap-6 text-left">
           {howItWorksArr.map((item, idx) => (
-            <div key={idx} className="p-6 bg-[#1f1f1f] border border-[#2a2a2a] rounded-xl hover:shadow-lg transition">
+            <div key={idx} className="p-6 bg-[#282840] border border-[#2a2a2a] rounded-xl hover:shadow-lg transition">
               <h4 className="text-xl font-semibold mb-2 text-white">{item.title}</h4>
               <p className="text-gray-400">{item.description}</p>
             </div>
