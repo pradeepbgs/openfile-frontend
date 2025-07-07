@@ -173,7 +173,7 @@ function UploadPage() {
               )}
             </div>
 
-            {isUploadSuccess && (
+            {!errorMessage && isUploadSuccess && (
               <p className="text-sm text-green-500 text-center">All files uploaded successfully!</p>
             )}
 
