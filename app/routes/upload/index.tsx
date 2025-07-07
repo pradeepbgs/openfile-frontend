@@ -84,22 +84,39 @@ function UploadPage() {
       return;
     }
 
+    // create a worker
+    const worker = new Worker(
+      new URL("./encryptWorker.ts", import.meta.url),
+      { type: "module" }
+    );
+
     for (const file of files) {
       try {
         setDisplayProgressMessage("Getting pre-signed upload URL...");
         const { url, key: s3Key, secretKey, iv: ivKey } = await getUploadUrl(file.type, token);
 
         setDisplayProgressMessage(`Encrypting ${file.name}...`);
-        const encryptedBlob = await encryptFileWithWebCrypto(file, secretKey, ivKey);
-        const encryptedFile = new File([encryptedBlob], file.name, {
-          type: file.type,
-        });
+        
+        worker.postMessage({ file, secretKey, iv })
+        
+        worker.onmessage = async (event) => {
+          if (event.data.error) {
+            setErrorMessage("Encryption failed: " + event.data.error);
+            return;
+          }
 
-        setDisplayProgressMessage(`Uploading ${file.name}...`);
-        await uploadFilesMutation({ encryptFile: encryptedBlob, type: file.type, url });
+          const encryptedBlob = event.data
 
-        setDisplayProgressMessage(`Updating database for ${file.name}...`);
-        await UpdateDbS3({ iv, s3Key, size: encryptedFile.size, token, filename: file.name });
+          const encryptedFile = new File([encryptedBlob], file.name, {
+            type: file.type,
+          });
+
+          setDisplayProgressMessage(`Uploading ${file.name}...`);
+          await uploadFilesMutation({ encryptFile: encryptedBlob, type: file.type, url });
+
+          setDisplayProgressMessage(`Updating database for ${file.name}...`);
+          await UpdateDbS3({ iv, s3Key, size: encryptedFile.size, token, filename: file.name });
+        }
       } catch (error) {
         console.error("Upload process failed:", error);
         const message = error instanceof Error ? error.message : "An unexpected error occurred.";
@@ -120,7 +137,6 @@ function UploadPage() {
 
 
   if (isTokenValidating) return <div className="text-center mt-20 text-gray-400">Validating link...</div>;
-
 
   if (isTokenInvalid) {
     return (
