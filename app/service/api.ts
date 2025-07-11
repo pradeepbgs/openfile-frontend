@@ -82,7 +82,7 @@ export const logout = async () => {
     }
 }
 
-const fetchValidateToken = async (token: string,secretKey:string,iv:string) => {
+const fetchValidateToken = async (token: string, secretKey: string, iv: string) => {
 
     const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link/validate?token=${token}&secretKey=${secretKey}&iv=${iv}`, {
         method: "GET",
@@ -95,10 +95,10 @@ const fetchValidateToken = async (token: string,secretKey:string,iv:string) => {
     return res.json();
 };
 
-export function useValidateTokenQuery(token: string,secretKey:string,iv:string) {
+export function useValidateTokenQuery(token: string, secretKey: string, iv: string) {
     return useQuery({
         queryKey: ["validate-token", token],
-        queryFn: () => fetchValidateToken(token,secretKey,iv),
+        queryFn: () => fetchValidateToken(token, secretKey, iv),
         enabled: !!token,
         retry: false,
     });
@@ -121,6 +121,10 @@ export function useUserLinksQuery() {
     return useQuery({
         queryKey: ["user-links"],
         queryFn: fetchUserLinks,
+        staleTime: Infinity,
+        gcTime: 1000 * 60 * 10,
+        refetchOnWindowFocus: false,
+        retry: false,
     });
 }
 
@@ -295,5 +299,35 @@ export function useCreateLinkMutation() {
     // const navigate = useNavigate();
     return useMutation({
         mutationFn: createLink,
+    });
+}
+
+
+const fetchStorageUsed = async () => {
+    try {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/storage-used`, {
+            method: "GET",
+            credentials: 'include',
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch storage used");
+        }
+
+        return res.json();
+    } catch (error) {
+        console.error("Error fetching storage used:", error);
+        throw error;
+    }
+};
+
+export function useStorageUsedQuery() {
+    return useQuery({
+        queryKey: ["storage-used"],
+        queryFn: fetchStorageUsed,
+        staleTime: Infinity,
+        gcTime: 1000 * 60 * 10,
+        refetchOnWindowFocus: false,
+        retry: false,
     });
 }
