@@ -1,6 +1,6 @@
 import { FaPlus } from "react-icons/fa";
 import { Link } from "react-router";
-import { useUserLinksQuery } from "~/service/api";
+import { useStorageUsedQuery, useUserLinksQuery } from "~/service/api";
 import type { LinkItem } from "types/types";
 import UserLinks from "~/components/user-links";
 import UserStats from "~/components/user-stats";
@@ -8,6 +8,7 @@ import Spinner from "~/components/spinner";
 
 function Profile() {
   const { data, isLoading, error, refetch } = useUserLinksQuery();
+  const { data: storageUsed, isLoading: storageUsedLoading, error: storageUsedError } = useStorageUsedQuery()
 
   if (isLoading) return <div className="min-h-screen flex justify-center items-center"><Spinner size={28} /></div>;
 
@@ -41,7 +42,7 @@ function Profile() {
 
       {/* Quick Stats */}
       <div className="mb-8">
-        <UserStats links={links} />
+        <UserStats links={links} storageUsed={storageUsed?.storageUsed || 0} storageUsedLoading={storageUsedLoading} storageUsedError={storageUsedError} />
       </div>
 
       {/* Recent Links */}

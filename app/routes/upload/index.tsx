@@ -145,7 +145,7 @@ function UploadPage() {
     );
 
 
-  if (isTokenValidating) return <div className="text-center mt-20 text-gray-400">Validating link...</div>;
+  if (isTokenValidating) return <div className="text-center mt-20 text-gray-100">Validating link...</div>;
 
   if (isTokenInvalid) {
     return (

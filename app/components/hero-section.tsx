@@ -1,6 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import bg from 'public/bg2.png'
+import { Link } from 'react-router'
 
 function HeroSection() {
   return (
@@ -27,7 +28,7 @@ function HeroSection() {
             OpenFile lets you receive files without sharing personal details. No sign-up needed for senders.
           </motion.p>
           <div className="flex flex-wrap gap-4">
-            <a href="/dashboard" className="px-6 py-3 bg-white text-black rounded-lg hover:bg-gray-200">Get Started</a>
+            <Link to="/dashboard" className="px-6 py-3 bg-white text-black rounded-lg hover:bg-gray-200">Get Started</Link>
             <a href="#how" className="px-6 py-3 text-white border border-gray-400 rounded-lg hover:bg-gray-800">How it works?</a>
           </div>
         </div>
