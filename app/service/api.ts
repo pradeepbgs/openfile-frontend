@@ -3,7 +3,8 @@ import { useCallback } from "react";
 import { useLocation, useNavigate } from "react-router";
 import type { createLinkArgs } from "types/types";
 import { useAuth } from "~/zustand/store";
-
+import axios from 'axios'
+import { useUploadProgressStore } from "~/zustand/progress-store";
 
 export function useGoogleLoginHandler() {
 
@@ -156,16 +157,31 @@ export function useUploadFilesMutation() {
 
 const uploadToS3 = async ({ encryptFile, url, type }: { encryptFile: Blob, url: string, type: string }) => {
     try {
-        const s3Response = await fetch(url, {
-            method: 'PUT',
+        // const s3Response = await fetch(url, {
+        //     method: 'PUT',
+        //     headers: {
+        //         "Content-Type": type,
+        //     },
+        //     body: encryptFile
+        // })
+        // if (!s3Response.ok) {
+        //     throw new Error("Failed to upload to S3");
+        // }
+        // return true
+
+        const res = await axios.put(url, encryptFile, {
             headers: {
-                "Content-Type": type,
+                'Content-Type': type
             },
-            body: encryptFile
+            onUploadProgress: (progressEvent) => {
+                const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent?.total || 1));
+                useUploadProgressStore.getState().setProgress(percentCompleted)
+            }
         })
-        if (!s3Response.ok) {
+        if (!(res.status >= 200 && res.status < 300)) {
             throw new Error("Failed to upload to S3");
         }
+
         return true
     } catch (error) {
         console.error("Error uploading to S3:", error);
@@ -330,4 +346,22 @@ export function useStorageUsedQuery() {
         refetchOnWindowFocus: false,
         retry: false,
     });
+}
+
+const deleteLink = async (id: number) => {
+    try {
+        const res = await axios.delete(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link/${id}`, {
+            withCredentials: true
+        })
+        return await res
+    } catch (error) {
+        console.log("got error during deleting link")
+        throw error
+    }
+}
+
+export function useDeleteLink() {
+    return useMutation({
+        mutationFn: deleteLink,
+    })
 }
