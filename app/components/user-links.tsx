@@ -5,6 +5,7 @@ import type { LinkItem } from 'types/types';
 import { formatDistanceToNow, isBefore } from 'date-fns';
 import AlertMenu from './alert-menu';
 import { IoMdRefresh } from "react-icons/io";
+import { useDeleteLink } from '~/service/api';
 
 function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh: () => void }) {
   const [spinning, setSpinning] = useState<boolean>(false);
@@ -18,8 +19,10 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
     navigate(`/dashboard/link?token=${link.token}#key=${link.secretKey}&iv=${link.iv}`);
   };
 
-  const handleLinkDelete = (id: number) => {
-    // API call to delete the link
+  const { mutateAsync: deleteLink, isError, error, isSuccess ,} = useDeleteLink()
+  const handleLinkDelete = async (id: number) => {
+    await deleteLink(id)
+    handleRefresh()
   };
 
   const handleRefreshLink = async () => {

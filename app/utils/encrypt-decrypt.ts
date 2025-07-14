@@ -84,12 +84,16 @@ export const decryptAndDownloadFileWithCrypto = async (
             }
         );
         useFileStatusStore.getState().updateFileStatus("downloading files...")
-        const data = await download_url.json();
+        const fileResponse = await download_url.json();
 
-        const res = await fetch(data.url);
-        const encryptedBuffer = await res.arrayBuffer()
+        const s3file = await fetch(fileResponse.url)
+        if (!s3file.ok) {
+            console.warn("file doesn't exists")
+            return
+        }
+        const encryptedBuffer = await s3file.arrayBuffer()
         useFileStatusStore.getState().updateFileStatus("decrypting files...")
-        const decryptedBlob = await decryptFileWithWebCrypto(encryptedBuffer, data.file.secretKey, data.file.iv);
+        const decryptedBlob = await decryptFileWithWebCrypto(encryptedBuffer, fileResponse.file.secretKey, fileResponse.file.iv);
 
         const link = document.createElement("a");
         link.href = URL.createObjectURL(decryptedBlob);

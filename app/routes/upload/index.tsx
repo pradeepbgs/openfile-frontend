@@ -9,6 +9,7 @@ import {
   useUploadS3Mutation,
   useValidateTokenQuery,
 } from "~/service/api";
+import { useUploadProgressStore } from "~/zustand/progress-store";
 import { useAuth } from "~/zustand/store";
 
 const MAX_FREE_USER_UPLOAD_MB = import.meta.env.VIET_MAX_FREE_USER_UPLOAD_MB ?? 200 as number;
@@ -26,7 +27,9 @@ function UploadPage() {
   const token = searchParams.get("token");
 
   const user = useAuth.getState().user;
-  const isFreeUser = user?.plan === "FREE";
+  const isFreeUser = user?.plan === "free";
+
+  const progress = useUploadProgressStore((state) => state.progress);
 
   const {
     register,
@@ -89,7 +92,7 @@ function UploadPage() {
       { type: "module" }
     );
 
-    const encryptFileWithWorker = (file: File, secretKey: string, iv: string):Promise<Blob> => {
+    const encryptFileWithWorker = (file: File, secretKey: string, iv: string): Promise<Blob> => {
       return new Promise((resolve, reject) => {
         worker.postMessage({ file, secretKey, iv });
 
@@ -134,6 +137,7 @@ function UploadPage() {
     } finally {
       worker.terminate();
       setDisplayProgressMessage("Upload Files");
+      useUploadProgressStore.getState().resetProgress();
     }
   }
 
@@ -209,14 +213,27 @@ function UploadPage() {
             <button
               type="submit"
               disabled={isUploading || !files?.length}
-              className={`w-full text-center py-2 rounded text-white text-sm transition ${isUploading || !files?.length
+              className={`relative w-full text-sm rounded text-white overflow-hidden border border-gray-600 transition ${isUploading || !files?.length
                 ? "bg-gray-600 cursor-not-allowed"
                 : "bg-black hover:bg-gray-800"
                 }`}
             >
-              {displayProgressMessage}
+              {
+                isUploading && (
+                  <div
+                    className="absolute top-0 left-0 h-full bg-green-600 transition-all duration-300 z-0"
+                    style={{ width: `${progress}%` }} >
+                  </div>
+                )
+              }
+
+              <span className="relative z-10 block w-full text-center py-2">
+                {isUploading ? `Uploading... ${progress}%` : displayProgressMessage}
+              </span>
+
             </button>
           </div>
+
         </form>
       </div>
     </div>
