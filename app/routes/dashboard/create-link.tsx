@@ -1,31 +1,36 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaCopy } from "react-icons/fa";
 import { downloadKeyFile } from "~/utils/dowload-key";
 import { useNavigate } from "react-router";
 import { useCreateLinkMutation } from "~/service/api";
 import Spinner from "~/components/spinner";
 import { generateKeyAndIVWithWebCrypto } from "~/utils/encrypt-decrypt";
+import { useAuth } from "~/zustand/store";
 
 const createLinkSchema = z.object({
   maxUploads: z.number({ required_error: "Max uploads is required" }).min(1),
   allowedFileType: z.array(z.string()).optional(),
   expiresAt: z.string().datetime().optional(),
-  secretKey: z.string().min(1),
-  iv: z.string().min(1),
 });
 
 type CreateLinkData = z.infer<typeof createLinkSchema>;
 type TimeUnit = "minutes" | "hours" | "days";
 
 export default function CreateLinkPage() {
-  const [uploadUrl, setUploadUrl] = useState<string | null>(null);
+  
+  const userPlan = useAuth.getState().user?.plan;
+  const maxUploadVal =
+    userPlan === "free" ? 3 : userPlan === "pro" ? 5 : userPlan === "enterprise" ? 10 : 1;
+ 
+    const [uploadUrl, setUploadUrl] = useState<string | null>(null);
   const [relativeTime, setRelativeTime] = useState<Record<string, string>>({
-    value: "",
-    unit: "minutes",
+    value: "1",
+    unit: "hours",
   });
+
   const [shouldDownloadKey, setShouldDownloadKey] = useState<boolean>(false);
 
   const navigate = useNavigate();
@@ -34,8 +39,6 @@ export default function CreateLinkPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    reset,
-    setValue,
   } = useForm<CreateLinkData>({
     resolver: zodResolver(createLinkSchema),
   });
@@ -48,8 +51,6 @@ export default function CreateLinkPage() {
   } = useCreateLinkMutation();
 
   const onSubmit = async (data: CreateLinkData) => {
-    const { secretKey, iv } = data;
-
     let expiresAt: string | undefined;
     if (relativeTime.value) {
       const now = new Date();
@@ -64,6 +65,7 @@ export default function CreateLinkPage() {
       expiresAt = now.toISOString();
     }
 
+    const { iv, key: secretKey } = await generateKeyAndIVWithWebCrypto()
     const payload = {
       ...data,
       expiresAt,
@@ -82,18 +84,19 @@ export default function CreateLinkPage() {
     }
   };
 
-  const generateKeyAndIV = async () => {
-    const { key, iv } = await generateKeyAndIVWithWebCrypto();
-    setValue("secretKey", key);
-    setValue("iv", iv);
-  };
+  // const generateKeyAndIV = async () => {
+  //   const { key, iv } = await generateKeyAndIVWithWebCrypto();
+  //   setValue("secretKey", key);
+  //   setValue("iv", iv);
+  // };
 
   const handleCheckboxChange = (e: any) => {
     setShouldDownloadKey(e.target.checked);
   };
 
+
   return (
-    <div className="min-h-screen bg-[#14151c] text-white flex flex-col  items-center px-4 py-6">
+    <div className="min-h-screen  text-white flex flex-col  items-center px-4 py-6">
       <h1 className="md:text-3xl text-[1.3rem] font-extrabold text-center mb-6 text-white">
         Create Secure Upload Link
       </h1>
@@ -109,6 +112,7 @@ export default function CreateLinkPage() {
               </label>
               <input
                 type="number"
+                defaultValue={maxUploadVal}
                 {...register("maxUploads", { valueAsNumber: true })}
                 className="w-24 border border-neutral-600 bg-[#2a2b3d] text-white px-2 py-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
@@ -153,7 +157,7 @@ export default function CreateLinkPage() {
           </div>
 
           {/* Secret Key + IV */}
-          <div className="flex flex-col md:flex-row gap-3">
+          {/* <div className="flex flex-col md:flex-row gap-3">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 Secret Key
@@ -179,7 +183,7 @@ export default function CreateLinkPage() {
                 className="w-full border border-neutral-600 bg-[#2a2b3d] text-white px-2 py-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
-          </div>
+          </div> */}
 
           {/* Download checkbox + Generate key */}
           <div className="flex flex-wrap items-center gap-4">
@@ -191,13 +195,13 @@ export default function CreateLinkPage() {
               />
               <label className="ml-2 text-sm text-gray-300">Download key & IV?</label>
             </div>
-            <button
+            {/* <button
               type="button"
               onClick={generateKeyAndIV}
               className="text-xs text-white px-3 py-2 rounded-sm bg-indigo-600 hover:bg-indigo-700 transition duration-300"
             >
               Generate Secure Key
-            </button>
+            </button> */}
           </div>
 
           {/* Submit */}
