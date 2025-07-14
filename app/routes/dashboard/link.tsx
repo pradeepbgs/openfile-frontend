@@ -14,12 +14,12 @@ function LinkPage() {
 
   const hashParams = new URLSearchParams(window.location.hash.slice(1));
   const key = hashParams.get("key") || "";
-  const { data, error, isLoading } = useUserFilesQuery(token, key);
+  const { data, isError, error, isLoading } = useUserFilesQuery(token, key);
   const files = data?.files;
   const msg = useFileStatusStore.getState().fileStatusMessages;
 
   if (isLoading) return <div className="min-h-screen flex justify-center items-center"><Spinner size={28} /></div>;
-  if (error) return <p className="h-full flex justify-center items-center p-4 text-red-400">Error fetching files.</p>;
+  // if (isError) return <p className="h-full flex justify-center items-center p-4 text-red-400">{error.message}</p>;
   if (!files?.length) return <p className="p-4 text-gray-400">No files available.</p>;
 
   const handleDecryptDownload = async (file: FileItem) => {
