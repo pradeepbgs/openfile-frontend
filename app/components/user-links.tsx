@@ -18,8 +18,7 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
     navigator.clipboard.writeText(linkToCopy);
   };
 
-  const route = (token:string, secret:{ key: string, iv: string }) => {
-    
+  const route = (token: string, secret: { key: string, iv: string }) => {
     navigate(`/dashboard/link?token=${token}#key=${secret?.key}&iv=${secret?.iv}`);
   };
 
@@ -58,8 +57,8 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-white mb-6">Your Recent Links</h2>
-      <div className="bg-[#1e1e2f] border border-neutral-700 rounded-lg shadow-md overflow-hidden">
+      <h2 className="text-2xl font-bold text-white mb-6">Recent Links</h2>
+      <div className="bg-[#1e1e2f] border border-neutral-700 rounded-lg shadow-md overflow-x-auto">
         <table className="min-w-full divide-y divide-neutral-700">
           <thead className="bg-[#2a2b3d]">
             <tr>
@@ -97,7 +96,7 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
                           title="Copy link to clipboard"
                         />
                         <button
-                          onClick={() => route(link.token,secret)}
+                         onClick={() => route(link.token, secret)}
                           className="text-indigo-400 hover:text-indigo-300 text-sm truncate max-w-xs block"
                           rel="noopener noreferrer"
                           title={fullLink}

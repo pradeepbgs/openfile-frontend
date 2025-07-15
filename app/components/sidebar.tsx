@@ -31,7 +31,7 @@ export default function Sidebar() {
 
       <aside
         className={` flex flex-col justify-between gap-90
-          fixed top-0 left-0 h-[100vh] w-64 bg-[#1a1b26] p-4 border-r-2 border-indigo-600 z-40 
+          fixed top-0 left-0 h-[100vh] w-64 bg-[#1a1b26] p-4 border-r-2 border-indigo-950 z-40 
           transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
           md:relative md:translate-x-0 

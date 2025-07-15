@@ -5,7 +5,7 @@ import { useAuth } from '~/zustand/store'
 function Header() {
   const isLoggedIn = useAuth.getState().user?.email
   return (
-    <header className="sticky top-0 z-50 bg-black shadow-md">
+    <header className="sticky top-0 z-50 bg-black/50 backdrop-blur-lg shadow-md">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-white">
           <Link to="/">OpenFile</Link>
