@@ -9,6 +9,7 @@ import {
   useUploadS3Mutation,
   useValidateTokenQuery,
 } from "~/service/api";
+import { getCryptoSecret } from "~/utils/crypto-store";
 import { useUploadProgressStore } from "~/zustand/progress-store";
 import { useAuth } from "~/zustand/store";
 
@@ -16,8 +17,8 @@ const MAX_FREE_USER_UPLOAD_MB = import.meta.env.VIET_MAX_FREE_USER_UPLOAD_MB ?? 
 
 function UploadPage() {
   const hashParams = new URLSearchParams(window.location.hash.slice(1));
-  const key = decodeURIComponent(hashParams.get("key") || "");
-  const iv = decodeURIComponent(hashParams.get("iv") || "");
+  const key = hashParams.get("key") || ""
+  const iv = hashParams.get("iv") || ""
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [totalSize, setTotalSize] = useState<number>(0);
@@ -44,7 +45,7 @@ function UploadPage() {
     isError: isTokenInvalid,
     isLoading: isTokenValidating,
     error: tokenValidationError,
-  } = useValidateTokenQuery(token || "", key, iv);
+  } = useValidateTokenQuery(token || "");
 
   const { mutateAsync: uploadFilesMutation, isPending: isUploading, isSuccess: isUploadSuccess } =
     useUploadS3Mutation();
@@ -113,10 +114,10 @@ function UploadPage() {
     try {
       for (const file of files) {
         setDisplayProgressMessage("Getting pre-signed upload URL...");
-        const { url, key: s3Key, secretKey } = await getUploadUrl(file.type, token);
+        const { url, key: s3Key } = await getUploadUrl(file.type, token);
 
         setDisplayProgressMessage(`Encrypting ${file.name}...`);
-        const encryptedBlob = await encryptFileWithWorker(file, secretKey, iv);
+        const encryptedBlob = await encryptFileWithWorker(file, key, iv);
 
         const encryptedFile = new File([encryptedBlob], file.name, {
           type: file.type,
@@ -126,7 +127,7 @@ function UploadPage() {
         await uploadFilesMutation({ encryptFile: encryptedBlob, type: file.type, url });
 
         setDisplayProgressMessage(`Updating database for ${file.name}...`);
-        await UpdateDbS3({ iv, s3Key, size: encryptedFile.size, token, filename: file.name });
+        await UpdateDbS3({ s3Key, size: encryptedFile.size, token, filename: file.name });
       }
 
       setDisplayProgressMessage("All files uploaded successfully!");
@@ -140,6 +141,8 @@ function UploadPage() {
       useUploadProgressStore.getState().resetProgress();
     }
   }
+
+ 
 
   if (!token)
     return (

@@ -5,6 +5,7 @@ import type { createLinkArgs } from "types/types";
 import { useAuth } from "~/zustand/store";
 import axios from 'axios'
 import { useUploadProgressStore } from "~/zustand/progress-store";
+import { getCryptoSecret } from "~/utils/crypto-store";
 
 export function useGoogleLoginHandler() {
 
@@ -83,9 +84,8 @@ export const logout = async () => {
     }
 }
 
-const fetchValidateToken = async (token: string, secretKey: string, iv: string) => {
-
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link/validate?token=${token}&secretKey=${secretKey}&iv=${iv}`, {
+const fetchValidateToken = async (token: string) => {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link/validate?token=${token}`, {
         method: "GET",
         credentials: 'include',
     });
@@ -96,10 +96,10 @@ const fetchValidateToken = async (token: string, secretKey: string, iv: string) 
     return res.json();
 };
 
-export function useValidateTokenQuery(token: string, secretKey: string, iv: string) {
+export function useValidateTokenQuery(token: string) {
     return useQuery({
         queryKey: ["validate-token", token],
-        queryFn: () => fetchValidateToken(token, secretKey, iv),
+        queryFn: () => fetchValidateToken(token),
         enabled: !!token,
         retry: false,
     });
@@ -130,13 +130,13 @@ export function useUserLinksQuery() {
 }
 
 
-const uploadFiles = async ({ formData, iv, token }: { formData: FormData; iv: string; token: string }) => {
+const uploadFiles = async ({ formData, token }: { formData: FormData; token: string }) => {
 
     const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file?token=${token}`, {
         method: "POST",
         body: formData,
         headers: {
-            'X-IV': iv,
+            'Content-Type': 'multipart/form-data'
         },
         credentials: 'include',
     });
@@ -198,13 +198,11 @@ export function useUploadS3Mutation() {
 
 
 
-const fetchUserFiles = async (token: string, key: string) => {
-    // const encodedKey = encodeURIComponent(key);
+const fetchUserFiles = async (token: string) => {
     const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/${token}/files?page=${1}&limit=${10}&key=${key}`, {
+        `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/${token}/files?page=${1}&limit=${10}`, {
         method: "GET",
         credentials: 'include',
-        // body:JSON.stringify({key})
     });
 
     if (!res.ok) {
@@ -214,16 +212,16 @@ const fetchUserFiles = async (token: string, key: string) => {
     return res.json();
 }
 
-export function useUserFilesQuery(token: string, key: string) {
+export function useUserFilesQuery(token: string) {
     return useQuery({
         queryKey: ["user-files"],
-        queryFn: () => fetchUserFiles(token, key),
+        queryFn: () => fetchUserFiles(token),
         enabled: !!token
     });
 }
 
 
-export const getUploadUrl = async (mimeType: string, token: string) => {
+export const getUploadUrl = async (mimeType: string, token: string | null) => {
     try {
         const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/upload-url?token=${token}`, {
             method: "POST",
@@ -246,14 +244,13 @@ export const getUploadUrl = async (mimeType: string, token: string) => {
 };
 
 
-const updateS3UpoadDB = async ({ iv, s3Key, size, token, filename }: { iv: string, s3Key: string, size: number, token: string, filename: string }) => {
+const updateS3UpoadDB = async ({ s3Key, size, token, filename }: {  s3Key: string, size: number, token: string|null, filename: string }) => {
     try {
         const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/notify-upload?token=${token}`, {
             method: "POST",
             credentials: "include",
             headers: {
                 "Content-Type": "application/json",
-                "X-IV": iv,
             },
             body: JSON.stringify({
                 s3Key,
@@ -279,7 +276,7 @@ export const useUpdateS3UploadDB = () => {
 
 
 
-const createLink = async ({ payload, navigate, secretKey, iv }: createLinkArgs): Promise<string | void> => {
+const createLink = async ({ payload, navigate, secretKey, iv }: createLinkArgs) => {
     try {
         const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link`, {
             method: "POST",
@@ -300,11 +297,7 @@ const createLink = async ({ payload, navigate, secretKey, iv }: createLinkArgs):
             console.error('err', result.error);
             throw result.error;
         }
-
-        // const safeKey = encodeURIComponent(secretKey);
-        // const safeIV = encodeURIComponent(iv);
-        const fullLink = `${result.uploadUrl}#key=${secretKey}&iv=${iv}`;
-        return fullLink
+        return result;
     } catch (error) {
         console.log("got error during creating link ")
         throw error;

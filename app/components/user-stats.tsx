@@ -13,7 +13,7 @@ function UserStats(
     links: LinkItem[],
     storageUsed: number,
     storageUsedLoading: boolean,
-    storageUsedError: boolean
+    storageUsedError: Error | null
   }
 ) {
   const totalUploads = links.reduce((sum, l) => sum + (l.uploadCount || 0), 0)

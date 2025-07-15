@@ -9,6 +9,7 @@ import { useCreateLinkMutation } from "~/service/api";
 import Spinner from "~/components/spinner";
 import { generateKeyAndIVWithWebCrypto } from "~/utils/encrypt-decrypt";
 import { useAuth } from "~/zustand/store";
+import { saveCryptoSecret } from "~/utils/crypto-store";
 
 const createLinkSchema = z.object({
   maxUploads: z.number({ required_error: "Max uploads is required" }).min(1),
@@ -20,12 +21,12 @@ type CreateLinkData = z.infer<typeof createLinkSchema>;
 type TimeUnit = "minutes" | "hours" | "days";
 
 export default function CreateLinkPage() {
-  
+
   const userPlan = useAuth.getState().user?.plan;
   const maxUploadVal =
     userPlan === "free" ? 3 : userPlan === "pro" ? 5 : userPlan === "enterprise" ? 10 : 1;
- 
-    const [uploadUrl, setUploadUrl] = useState<string | null>(null);
+
+  const [uploadUrl, setUploadUrl] = useState<string | null>(null);
   const [relativeTime, setRelativeTime] = useState<Record<string, string>>({
     value: "1",
     unit: "hours",
@@ -68,15 +69,20 @@ export default function CreateLinkPage() {
     const { iv, key: secretKey } = await generateKeyAndIVWithWebCrypto()
     const payload = {
       ...data,
-      expiresAt,
-      secretKey,
-      iv,
+      expiresAt
     };
 
     try {
-      const fullLink = await createLink({ iv, navigate, payload, secretKey });
-      if (fullLink) {
+      interface Result {
+        uploadUrl?: string;
+        token?: string;
+      }
+      const result: Result | void = await createLink({ payload, navigate, secretKey, iv });
+      if (result) {
+        const {token,uploadUrl} = result;
+        const fullLink = `${uploadUrl}#key=${secretKey}&iv=${iv}`;
         setUploadUrl(fullLink);
+        saveCryptoSecret(token!,{iv,key:secretKey})
         shouldDownloadKey && downloadKeyFile(fullLink, secretKey, iv);
       }
     } catch (err) {
@@ -84,11 +90,6 @@ export default function CreateLinkPage() {
     }
   };
 
-  // const generateKeyAndIV = async () => {
-  //   const { key, iv } = await generateKeyAndIVWithWebCrypto();
-  //   setValue("secretKey", key);
-  //   setValue("iv", iv);
-  // };
 
   const handleCheckboxChange = (e: any) => {
     setShouldDownloadKey(e.target.checked);
