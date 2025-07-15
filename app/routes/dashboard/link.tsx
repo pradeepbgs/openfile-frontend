@@ -14,18 +14,20 @@ function LinkPage() {
 
   const hashParams = new URLSearchParams(window.location.hash.slice(1));
   const key = hashParams.get("key") || "";
-  const { data, isError, error, isLoading } = useUserFilesQuery(token, key);
+  const iv = hashParams.get('iv') || ''
+
+  const { data, isError, error, isLoading } = useUserFilesQuery(token);
   const files = data?.files;
   const msg = useFileStatusStore.getState().fileStatusMessages;
 
   if (isLoading) return <div className="min-h-screen flex justify-center items-center"><Spinner size={28} /></div>;
-  // if (isError) return <p className="h-full flex justify-center items-center p-4 text-red-400">{error.message}</p>;
   if (!files?.length) return <p className="p-4 text-gray-400">No files available.</p>;
+  if (isError) return <p className="h-full flex justify-center items-center p-4 text-red-400">{error.message}</p>;
 
   const handleDecryptDownload = async (file: FileItem) => {
     setDecryptingFileId(file.id);
     try {
-      await decryptAndDownloadFileWithCrypto(file, file.name, token, key);
+      await decryptAndDownloadFileWithCrypto(file, file.name, token, key, iv);
     } finally {
       setDecryptingFileId(null);
     }

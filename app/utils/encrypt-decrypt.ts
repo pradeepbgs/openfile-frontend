@@ -72,13 +72,14 @@ export const decryptAndDownloadFileWithCrypto = async (
     file: FileItem,
     fileName: string,
     token: string,
-    key: string
+    key: string,
+    iv: string
 ) => {
+    const awskey = new URL(file?.url).pathname.slice(1);
+    useFileStatusStore.getState().updateFileStatus('getting signed URL..')
     try {
-        const awskey = new URL(file?.url).pathname.slice(1);
-        useFileStatusStore.getState().updateFileStatus('getting signed URL..')
         const download_url = await fetch(
-            `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/signed-url?s3key=${awskey}&token=${token}&secretKey=${key}&fileId=${file.id}`,
+            `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/signed-url?s3key=${awskey}&token=${token}&fileId=${file.id}`,
             {
                 credentials: 'include'
             }
@@ -93,7 +94,11 @@ export const decryptAndDownloadFileWithCrypto = async (
         }
         const encryptedBuffer = await s3file.arrayBuffer()
         useFileStatusStore.getState().updateFileStatus("decrypting files...")
-        const decryptedBlob = await decryptFileWithWebCrypto(encryptedBuffer, fileResponse.file.secretKey, fileResponse.file.iv);
+
+        const base64Key = base64UrlToBase64(key);
+        const base64IV = base64UrlToBase64(iv);
+
+        const decryptedBlob = await decryptFileWithWebCrypto(encryptedBuffer, base64Key, base64IV);
 
         const link = document.createElement("a");
         link.href = URL.createObjectURL(decryptedBlob);
@@ -110,33 +115,33 @@ export const decryptFileWithWebCrypto = async (
     encryptedData: ArrayBuffer,
     base64Key: string,
     base64IV: string
-  ): Promise<Blob> => {
+): Promise<Blob> => {
+
     const worker = new Worker(
-      new URL('./decryptWorker.ts', import.meta.url),
-      { type: 'module' }
+        new URL('./decryptWorker.ts', import.meta.url),
+        { type: 'module' }
     );
-  
+
     const decryptWithWorker = (): Promise<ArrayBuffer> => {
-      return new Promise((resolve, reject) => {
-        worker.onmessage = (event) => {
-          if (event.data.error) {
-            reject(event.data.error);
-          } else {
-            resolve(event.data.decryptedBuffer);
-          }
-          worker.terminate();
-        };
-  
-        worker.onerror = (err) => {
-          reject("Worker error: " + err.message);
-          worker.terminate();
-        };
-  
-        worker.postMessage({ base64Key, base64IV, encryptedData });
-      });
+        return new Promise((resolve, reject) => {
+            worker.onmessage = (event) => {
+                if (event.data.error) {
+                    reject(event.data.error);
+                } else {
+                    resolve(event.data.decryptedBuffer);
+                }
+                worker.terminate();
+            };
+
+            worker.onerror = (err) => {
+                reject("Worker error: " + err.message);
+                worker.terminate();
+            };
+
+            worker.postMessage({ base64Key, base64IV, encryptedData });
+        });
     };
-  
+
     const decryptedBuffer = await decryptWithWorker();
     return new Blob([decryptedBuffer]);
-  };
-  
+};

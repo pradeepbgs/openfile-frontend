@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaCopy } from 'react-icons/fa';
 import { useNavigate } from 'react-router';
 import type { LinkItem } from 'types/types';
@@ -6,20 +6,24 @@ import { formatDistanceToNow, isBefore } from 'date-fns';
 import AlertMenu from './alert-menu';
 import { IoMdRefresh } from "react-icons/io";
 import { useDeleteLink } from '~/service/api';
+import { getCryptoSecret } from '~/utils/crypto-store';
 
 function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh: () => void }) {
   const [spinning, setSpinning] = useState<boolean>(false);
+  const [secretsMap, setSecretsMap] = useState<Record<string, { key: string, iv: string }>>({});
+
   const navigate = useNavigate();
 
   const handleCopyLink = (linkToCopy: string) => {
     navigator.clipboard.writeText(linkToCopy);
   };
 
-  const route = (link: LinkItem) => {
-    navigate(`/dashboard/link?token=${link.token}#key=${link.secretKey}&iv=${link.iv}`);
+  const route = (token:string, secret:{ key: string, iv: string }) => {
+    
+    navigate(`/dashboard/link?token=${token}#key=${secret?.key}&iv=${secret?.iv}`);
   };
 
-  const { mutateAsync: deleteLink, isError, error, isSuccess ,} = useDeleteLink()
+  const { mutateAsync: deleteLink, isError, error, isSuccess, } = useDeleteLink()
   const handleLinkDelete = async (id: number) => {
     await deleteLink(id)
     handleRefresh()
@@ -37,6 +41,20 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
       }, 300);
     }
   }
+
+  useEffect(() => {
+    const loadSecrets = async () => {
+      const newSecrets: Record<string, { key: string, iv: string }> = {};
+      for (const link of links) {
+        const secret = await getCryptoSecret(link.token);
+        if (secret) {
+          newSecrets[link.token] = secret;
+        }
+      }
+      setSecretsMap(newSecrets);
+    }
+    loadSecrets()
+  }, [])
 
   return (
     <div>
@@ -65,7 +83,8 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
           <tbody className="divide-y divide-neutral-700 text-white">
             {links.length > 0 ? (
               links.map((link: LinkItem) => {
-                const fullLink = `${import.meta.env.VITE_UPLOAD_URL}?token=${link.token}#key=${encodeURIComponent(link.secretKey)}&iv=${encodeURIComponent(link.iv)}`;
+                const secret = secretsMap[link.token];
+                const fullLink = `${import.meta.env.VITE_UPLOAD_URL}?token=${link.token}#key=${secret?.key}&iv=${secret?.iv}`;
 
                 return (
                   <tr key={link.id} className="hover:bg-[#2a2b3d] transition-colors duration-200">
@@ -78,7 +97,7 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
                           title="Copy link to clipboard"
                         />
                         <button
-                          onClick={() => route(link)}
+                          onClick={() => route(link.token,secret)}
                           className="text-indigo-400 hover:text-indigo-300 text-sm truncate max-w-xs block"
                           rel="noopener noreferrer"
                           title={fullLink}

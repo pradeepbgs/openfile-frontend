@@ -1,5 +1,5 @@
 export interface LinkItem {
-  id: string;
+  id: number;
   iv: string;
   maxUploads: number;
   secretKey: number;
@@ -35,6 +35,4 @@ export interface CreateLinkPayload {
   maxUploads: number;
   allowedFileType?: string[];
   expiresAt?: string; 
-  secretKey: string;
-  iv: string;
 }
