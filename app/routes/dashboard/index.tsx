@@ -10,9 +10,9 @@ const DashboardLayout = () => {
   const navigate = useNavigate()
   const user = useAuth.getState().user?.email
 
-  // useEffect(() => {
-  //   if (!user) navigate('/auth')
-  // }, [])
+  useEffect(() => {
+    if (!user) navigate('/auth')
+  }, [])
 
   return (
     <div>
