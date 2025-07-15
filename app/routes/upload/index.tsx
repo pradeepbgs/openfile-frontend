@@ -168,7 +168,7 @@ function UploadPage() {
     <div className="bg-[#121212] text-white min-h-screen">
       <Header />
       <div className="max-w-2xl mx-auto py-12 px-4">
-        <h1 className="text-2xl font-semibold text-center mb-6">Upload Encrypted Files</h1>
+        <h1 className="text-2xl font-semibold text-center mb-6">Upload Files</h1>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="bg-[#1f1f1f] border border-[#2c2c2c] p-6 rounded-lg shadow-md space-y-6">
@@ -196,14 +196,6 @@ function UploadPage() {
             <p className="text-sm text-gray-400">
               Total size: {(totalSize / 1024 / 1024).toFixed(2)} MB
             </p>
-
-            <div>
-              {key && iv ? (
-                <p className="text-sm text-green-400">Encryption Key and IV loaded from URL.</p>
-              ) : (
-                <p className="text-sm text-red-500">Missing encryption key or IV in the link.</p>
-              )}
-            </div>
 
             {!errorMessage && isUploadSuccess && (
               <p className="text-sm text-green-500 text-center">All files uploaded successfully!</p>
