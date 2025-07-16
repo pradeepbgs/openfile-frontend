@@ -6,6 +6,7 @@ import HeroSection from "~/components/hero-section";
 import HowItWorks from "~/components/how-it-works";
 import Features from "~/components/features";
 import PlansPage from "./dashboard/plan";
+import { FaLock, FaShareAlt, FaUpload, FaUserSecret } from "react-icons/fa";
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -20,8 +21,34 @@ export default function Home() {
       <Header />
       <main className="flex-grow">
         <HeroSection />
+        {/* Features */}
+        <section id="features" className="bg-slate-800 py-16 px-6">
+          <h3 className="text-3xl font-bold text-center mb-12">Why OpenFile?</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+            <div>
+              <FaLock className="mx-auto text-blue-500 text-3xl mb-3" />
+              <h4 className="font-semibold text-lg mb-2">Zero-Knowledge</h4>
+              <p className="text-slate-300 text-sm">Only you hold the decryption key. Even we can't read your files.</p>
+            </div>
+            <div>
+              <FaUserSecret className="mx-auto text-blue-500 text-3xl mb-3" />
+              <h4 className="font-semibold text-lg mb-2">Private Upload Links</h4>
+              <p className="text-slate-300 text-sm">Create links that expire or allow one-time use, securely.</p>
+            </div>
+            <div>
+              <FaShareAlt className="mx-auto text-blue-500 text-3xl mb-3" />
+              <h4 className="font-semibold text-lg mb-2">Controlled Sharing</h4>
+              <p className="text-slate-300 text-sm">Others can upload, but can’t view or download what they sent.</p>
+            </div>
+            <div>
+              <FaUpload className="mx-auto text-blue-500 text-3xl mb-3" />
+              <h4 className="font-semibold text-lg mb-2">Simple & Secure</h4>
+              <p className="text-slate-300 text-sm">No signup needed to upload. Files go directly to your dashboard.</p>
+            </div>
+          </div>
+        </section>
+        {/* <Features /> */}
         <HowItWorks />
-        <Features />
 
         <PlansPage />
         {/* Final CTA */}
