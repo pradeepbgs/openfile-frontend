@@ -6,7 +6,7 @@ import UserStats from "~/components/user-stats";
 import Spinner from "~/components/spinner";
 
 function Profile() {
-  const { data, isLoading, isError, refetch } = useUserLinksQuery();
+  const { data: links, isLoading, isError, refetch } = useUserLinksQuery();
   const { data: storageUsed, isLoading: storageUsedLoading, error: storageUsedError } = useStorageUsedQuery()
 
   if (isLoading) return <div className="min-h-screen flex justify-center items-center"><Spinner size={28} /></div>;
@@ -18,8 +18,6 @@ function Profile() {
       </div>
     );
   }
-
-  const links: LinkItem[] = data?.links || [];
 
   const handleRefresh = async () => {
     await refetch();

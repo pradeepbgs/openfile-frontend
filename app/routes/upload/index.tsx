@@ -12,8 +12,13 @@ import {
 import { getCryptoSecret } from "~/utils/crypto-store";
 import { useUploadProgressStore } from "~/zustand/progress-store";
 import { useAuth } from "~/zustand/store";
+import { lookup } from "mime-types";
 
 const MAX_FREE_USER_UPLOAD_MB = import.meta.env.VIET_MAX_FREE_USER_UPLOAD_MB ?? 200 as number;
+
+const getSafeMimeType = (file: File): string => {
+  return file.type || lookup(file.name) || "application/octet-stream";
+};
 
 function UploadPage() {
   const hashParams = new URLSearchParams(window.location.hash.slice(1));
@@ -114,7 +119,9 @@ function UploadPage() {
     try {
       for (const file of files) {
         setDisplayProgressMessage("Getting pre-signed upload URL...");
-        const { url, key: s3Key } = await getUploadUrl(file.type, token);
+        const mimeType = file.type || 'application/octet-stream';
+        const { url, key: s3Key } = await getUploadUrl(mimeType, token);
+
 
         setDisplayProgressMessage(`Encrypting ${file.name}...`);
         const encryptedBlob = await encryptFileWithWorker(file, key, iv);
@@ -124,7 +131,7 @@ function UploadPage() {
         });
 
         setDisplayProgressMessage(`Uploading ${file.name}...`);
-        await uploadFilesMutation({ encryptFile: encryptedBlob, type: file.type, url });
+        await uploadFilesMutation({ encryptFile: encryptedBlob, type: mimeType, url });
 
         setDisplayProgressMessage(`Updating database for ${file.name}...`);
         await UpdateDbS3({ s3Key, size: encryptedFile.size, token, filename: file.name });
@@ -142,7 +149,7 @@ function UploadPage() {
     }
   }
 
- 
+
 
   if (!token)
     return (
@@ -152,7 +159,10 @@ function UploadPage() {
     );
 
 
-  if (isTokenValidating) return <div className="text-center mt-20 text-gray-100">Validating link...</div>;
+  if (isTokenValidating)
+    return <div className="text-center bg-black w-ful h-screen text-gray-100">
+      <p className="pt-20"> Validating link... </p>
+    </div>;
 
   if (isTokenInvalid) {
     return (
@@ -182,6 +192,7 @@ function UploadPage() {
               <label className="block text-sm font-medium mb-1">Select Files</label>
               <input
                 type="file"
+                webkitdirectory=""
                 multiple
                 {...register("files")}
                 className="w-full bg-black text-white border border-gray-600 px-3 py-2 text-sm rounded-md file:border-0 file:bg-gray-800 file:text-white"
