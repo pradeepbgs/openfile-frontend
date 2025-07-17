@@ -192,7 +192,6 @@ function UploadPage() {
               <label className="block text-sm font-medium mb-1">Select Files</label>
               <input
                 type="file"
-                webkitdirectory=""
                 multiple
                 {...register("files")}
                 className="w-full bg-black text-white border border-gray-600 px-3 py-2 text-sm rounded-md file:border-0 file:bg-gray-800 file:text-white"

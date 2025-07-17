@@ -57,7 +57,7 @@ export default function Home() {
           <p className="mt-4 text-lg text-gray-400">No accounts, no spam — just simple, secure file transfers.</p>
           <div className="mt-6">
             <a
-              href="/auth/register"
+              href="/dashboard"
               className="bg-white text-black px-6 py-3 rounded-lg hover:bg-gray-200 transition"
             >
               Create Your Link
