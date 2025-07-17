@@ -13,6 +13,7 @@ import { getCryptoSecret } from "~/utils/crypto-store";
 import { useUploadProgressStore } from "~/zustand/progress-store";
 import { useAuth } from "~/zustand/store";
 import { lookup } from "mime-types";
+import Spinner from "~/components/spinner";
 
 const MAX_FREE_USER_UPLOAD_MB = import.meta.env.VIET_MAX_FREE_USER_UPLOAD_MB ?? 200 as number;
 
@@ -160,9 +161,9 @@ function UploadPage() {
 
 
   if (isTokenValidating)
-    return <div className="text-center bg-black w-ful h-screen text-gray-100">
-      <p className="pt-20"> Validating link... </p>
-    </div>;
+  return <div className="text-center bg-black w-ful h-screen text-gray-100">
+    <Spinner size={20} color="white"/>
+  </div>;
 
   if (isTokenInvalid) {
     return (

@@ -3,11 +3,11 @@ import * as spinners from 'react-spinners';
 
 const ClipLoader = (spinners as any).ClipLoader || spinners.ClipLoader;
 
-function Spinner({ size = 14 }: { size?: number }) {
+function Spinner({ size = 14, color = 'black' }: { size?: number, color?: string }) {
   return (
     <div className='h-full flex justify-center items-center'>
       <ClipLoader
-        color="black"
+        color={color}
         size={size}
       />
     </div>
