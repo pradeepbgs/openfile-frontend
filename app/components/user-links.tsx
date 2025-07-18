@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { FaCopy } from 'react-icons/fa';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import type { LinkItem } from 'types/types';
 import { formatDistanceToNow, isBefore } from 'date-fns';
 import AlertMenu from './alert-menu';
 import { IoMdRefresh } from "react-icons/io";
 import { useDeleteLink } from '~/service/api';
 import { getCryptoSecret } from '~/utils/crypto-store';
+import { FaLink } from "react-icons/fa6";
+import { toast } from "sonner"
 
 function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh: () => void }) {
   const [spinning, setSpinning] = useState<boolean>(false);
@@ -16,6 +18,7 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
 
   const handleCopyLink = (linkToCopy: string) => {
     navigator.clipboard.writeText(linkToCopy);
+    toast("copied to clipboard")
   };
 
   const route = (token: string, secret: { key: string, iv: string }) => {
@@ -25,6 +28,7 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
   const { mutateAsync: deleteLink, isError, error, isSuccess, } = useDeleteLink()
   const handleLinkDelete = async (id: number) => {
     await deleteLink(id)
+    toast("link deleted")
     handleRefresh()
   };
 
@@ -95,8 +99,21 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
                           onClick={() => handleCopyLink(fullLink)}
                           title="Copy link to clipboard"
                         />
+                        <Link 
+                        to={fullLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >
+                          <FaLink
+                            color='blue'
+                            cursor={'pointer'}
+                            // onClick={() => }
+                            size={18}
+                          />
+                        </Link>
+
                         <button
-                         onClick={() => route(link.token, secret)}
+                          onClick={() => route(link.token, secret)}
                           className="text-indigo-400 hover:text-indigo-300 text-sm truncate max-w-xs block"
                           rel="noopener noreferrer"
                           title={fullLink}
@@ -123,8 +140,10 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
               })
             ) : (
               <tr>
-                <td colSpan={4} className="px-6 py-10 text-center text-gray-400 text-lg">
-                  No links found. Click "Create New Link" to get started!
+                <td colSpan={4} className="px-6 py-5 text-center text-gray-200 text-lg">
+                  <button
+                    onClick={() => navigate('/dashboard')}
+                    className='bg-blue-700 hover:bg-blue-600 px-2 py-1 rounded-md cursor-pointer'>Create new Link</button>
                 </td>
               </tr>
             )}

@@ -5,6 +5,7 @@ export default [
     route('/about', 'routes/about.tsx'),
     route('/contact', 'routes/contact/index.tsx'),
     route('/auth', 'routes/auth/auth.tsx'),
+    route('/privacy-policy', 'components/privacy-policy.tsx'),
     route('dashboard', 'routes/dashboard/index.tsx',[
         index('routes/dashboard/home.tsx'),
         route('profile', 'routes/dashboard/profile.tsx'),
@@ -14,4 +15,4 @@ export default [
     route('plan','routes/dashboard/plan.tsx'),
     route('upload', 'routes/upload/index.tsx'),
     route('/*','components/not-found.tsx')
-] satisfies RouteConfig;
+] as RouteConfig;

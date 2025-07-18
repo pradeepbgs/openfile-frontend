@@ -10,6 +10,7 @@ import Spinner from "~/components/spinner";
 import { generateKeyAndIVWithWebCrypto } from "~/utils/encrypt-decrypt";
 import { useAuth } from "~/zustand/store";
 import { saveCryptoSecret } from "~/utils/crypto-store";
+import { toast } from "sonner";
 
 const createLinkSchema = z.object({
   maxUploads: z.number({ required_error: "Max uploads is required" }).min(1),
@@ -82,6 +83,7 @@ export default function CreateLinkPage() {
         const {token,uploadUrl} = result;
         const fullLink = `${uploadUrl}#key=${secretKey}&iv=${iv}`;
         setUploadUrl(fullLink);
+        toast('secure link created successfully')
         saveCryptoSecret(token!,{iv,key:secretKey})
         shouldDownloadKey && downloadKeyFile(fullLink, secretKey, iv);
       }

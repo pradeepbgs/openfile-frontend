@@ -14,13 +14,13 @@ function Footer() {
                     <Link to="/privacy-policy" className="hover:text-white transition-colors duration-200">
                         Privacy Policy
                     </Link>
-                    <Link to="/terms" className="hover:text-white transition-colors duration-200">
+                    <Link to="/privacy-policy/#terms" className="hover:text-white transition-colors duration-200">
                         Terms of Service
                     </Link>
-                    <Link to="/security" className="hover:text-white transition-colors duration-200">
+                    <Link to="/privacy-policy/#security" className="hover:text-white transition-colors duration-200">
                         Security
                     </Link>
-                    <Link to="/contact" className="hover:text-white transition-colors duration-200">
+                    <Link to="/privacy-policy/#contact" className="hover:text-white transition-colors duration-200">
                         Contact
                     </Link>
                 </div>
