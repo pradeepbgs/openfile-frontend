@@ -19,6 +19,10 @@ import { useEffect, useState } from "react";
 import { authCheck } from "./service/api";
 import "@radix-ui/themes/styles.css";
 import { Theme } from "@radix-ui/themes";
+import * as sonner from "sonner";
+
+const Toaster = (sonner as any).Toaster || sonner.Toaster;
+
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -44,6 +48,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <Toaster />
         <ScrollRestoration />
         <Scripts />
       </body>
