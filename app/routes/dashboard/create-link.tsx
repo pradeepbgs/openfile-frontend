@@ -80,11 +80,11 @@ export default function CreateLinkPage() {
       }
       const result: Result | void = await createLink({ payload, navigate, secretKey, iv });
       if (result) {
-        const {token,uploadUrl} = result;
+        const { token, uploadUrl } = result;
         const fullLink = `${uploadUrl}#key=${secretKey}&iv=${iv}`;
         setUploadUrl(fullLink);
         toast('secure link created successfully')
-        saveCryptoSecret(token!,{iv,key:secretKey})
+        saveCryptoSecret(token!, { iv, key: secretKey })
         shouldDownloadKey && downloadKeyFile(fullLink, secretKey, iv);
       }
     } catch (err) {
@@ -104,7 +104,7 @@ export default function CreateLinkPage() {
         Create Secure Upload Link
       </h1>
 
-      <div className="max-w-5xl md:w-[60%] gap-6 border border-neutral-700 rounded-md p-6 shadow-lg bg-[#1e1e2f] text-white">
+      <div className="max-w-5xl md:w-[60%] gap-6 border border-white/10 rounded-md p-6 shadow-lg bg-white/5 text-white">
         {/* FORM */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Uploads + Expiry */}
@@ -117,7 +117,7 @@ export default function CreateLinkPage() {
                 type="number"
                 defaultValue={maxUploadVal}
                 {...register("maxUploads", { valueAsNumber: true })}
-                className="w-24 border border-neutral-600 bg-[#2a2b3d] text-white px-2 py-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-24 border border-white/10 bg-white/10 text-white px-2 py-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               {errors.maxUploads && (
                 <p className="text-sm text-red-400 mt-1">
@@ -139,7 +139,7 @@ export default function CreateLinkPage() {
                   onChange={(e) =>
                     setRelativeTime({ ...relativeTime, value: e.target.value })
                   }
-                  className="w-24 border border-neutral-600 bg-[#2a2b3d] text-white px-3 py-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-24 border border-white/10 bg-white/10 text-white px-3 py-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
                 <select
                   value={relativeTime.unit}
@@ -149,7 +149,7 @@ export default function CreateLinkPage() {
                       unit: e.target.value as TimeUnit,
                     })
                   }
-                  className="border border-neutral-600 bg-[#2a2b3d] text-white px-2 py-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="border border-white/10 bg-white/10 text-white px-2 py-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="minutes">Minutes</option>
                   <option value="hours">Hours</option>
@@ -211,11 +211,13 @@ export default function CreateLinkPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-md bg-indigo-600 hover:bg-indigo-700 text-white py-2 text-sm disabled:opacity-60 transition duration-300"
+            className="w-full rounded-md bg-purple-600 hover:bg-purple-700 text-white py-2 text-sm disabled:opacity-60 transition duration-300"
           >
             {isCreateLinkPending ? <Spinner size={15} /> : "Generate Link"}
           </button>
         </form>
+        
+        <hr className="border-white/10 my-6" />
 
         {/* OUTPUT LINK */}
         <div className="space-y-4 mt-4">
@@ -227,7 +229,7 @@ export default function CreateLinkPage() {
           )}
 
 
-          <div className="w-full border border-neutral-600 rounded-md p-4 text-sm break-words bg-[#2a2b3d] text-white">
+          <div className="w-full border border-white/10 rounded-md p-4 text-sm break-words bg-white/5 backdrop-blur text-white">
             {uploadUrl ? (
               <div className="flex items-start gap-4">
                 <FaCopy

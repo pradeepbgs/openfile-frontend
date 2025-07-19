@@ -34,7 +34,7 @@ function LinkPage() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto min-h-screen text-white">
+    <div className=" max-w-6xl mx-auto min-h-screen text-white">
       <h1 className="text-3xl font-bold mb-6 text-center text-white">Your Encrypted Files</h1>
 
       <h3 className="text-sm text-yellow-400 text-center mb-4 max-w-3xl mx-auto">

@@ -23,19 +23,23 @@ function Profile() {
     await refetch();
   }
   return (
-    <div className="min-h-screen bg-[#14151c] text-white px-4 md:px-10 py-10 md:py-5">
-
-
-      {/* Quick Stats */}
+    <div className="min-h-screen text-white px-4 md:px-10 py-10 md:py-5">
+      {/* Stats Section */}
       <div className="mb-8">
-        <UserStats links={links} storageUsed={storageUsed?.storageUsed || 0} storageUsedLoading={storageUsedLoading} storageUsedError={storageUsedError} />
+        <UserStats
+          links={links}
+          storageUsed={storageUsed?.storageUsed || 0}
+          storageUsedLoading={storageUsedLoading}
+          storageUsedError={storageUsedError}
+        />
       </div>
 
-      {/* Recent Links */}
+      {/* Recent Links Section */}
       <div>
         <UserLinks links={links} handleRefresh={handleRefresh} />
       </div>
     </div>
+
   );
 }
 

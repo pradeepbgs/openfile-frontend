@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router'
 import { FiHome, FiUser, FiSettings, FiChevronDown, FiMenu } from 'react-icons/fi'
 import { useAuth } from '~/zustand/store';
 import SidebarDropdown from './sidebar-dropdown';
+import OpenfileLogo from './openfile-logo';
 
 const Tabs = [
   { name: "Home", path: "/dashboard", icon: <FiHome /> },
@@ -24,23 +25,24 @@ export default function Sidebar() {
           className="md:hidden p-3 text-2xl absolute left-2 z-50 "
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
-          <FiMenu 
-          color='white'
+          <FiMenu
+            color='white'
           />
         </button>}
 
       <aside
         className={` flex flex-col justify-between gap-90
-          fixed top-0 left-0 h-[100vh] w-64 bg-[#1a1b26] p-4 border-r-2 border-indigo-950 z-40 
+          fixed top-0 left-0 h-[100vh] w-64  p-4 border-r-2 border-indigo-900 z-40 
           transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
           md:relative md:translate-x-0 
         `}
-      > 
+      >
         <div className='text-white'>
-          <h2 className="text-xl font-bold mb-4">
-            <Link to={'/'}>OpenFile</Link>
-          </h2>
+          <div className="flex items-center space-x-2 mb-4">
+            <OpenfileLogo />
+            <Link to={'/'} className="text-2xl font-bold text-white">OpenFile</Link>
+          </div>
           <nav className="flex flex-col space-y-2">
             {Tabs.map((tab) => (
               <NavLink
@@ -48,8 +50,8 @@ export default function Sidebar() {
                 to={tab.path}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200
-                  ${isActive ? "bg-indigo-600 text-white font-semibold shadow"
-                    : "text-gray-300 hover:bg-[#2a2b3d] hover:text-white"}`
+                  ${isActive ? "bg-gradient-to-br from-gray-700 via-blue-700 to-purple-900 text-white font-semibold shadow"
+                    : "text-gray-300 hover:bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 hover:text-white"}`
                 }
               >
                 {tab.icon}

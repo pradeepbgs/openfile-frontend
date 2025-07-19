@@ -20,9 +20,9 @@ export default function AuthPage() {
 
     
     return (
-        <div>
+        <div className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
             <Header />
-            <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
+            <div className="min-h-screen flex items-center justify-center px-4 ">
                 <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-md">
                     <h2 className="text-2xl font-bold mb-6 text-center text-black">
                         {/* {isSignup ? "Create an account" : "Welcome back"} */}
