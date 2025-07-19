@@ -31,7 +31,7 @@ export default function Sidebar() {
         </button>}
 
       <aside
-        className={` flex flex-col justify-between gap-90
+        className={`bg-black/90 flex flex-col justify-between gap-90
           fixed top-0 left-0 h-[100vh] w-64  p-4 border-r-2 border-indigo-900 z-40 
           transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 

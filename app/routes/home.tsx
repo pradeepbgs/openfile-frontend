@@ -1,7 +1,5 @@
-import React from 'react';
-import { Shield, Lock, Upload, Download, Users, CheckCircle, ArrowRight, FileText, Zap, Globe } from 'lucide-react';
+import { Shield, Lock, Upload, Download, ArrowRight, Zap, Globe } from 'lucide-react';
 import { Link } from 'react-router';
-import OpenfileLogo from '~/components/openfile-logo';
 import Header from '~/components/header';
 import Footer from '~/components/footer';
 import PlansPage from './dashboard/plan';

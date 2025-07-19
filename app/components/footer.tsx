@@ -1,6 +1,5 @@
 import { FileText } from 'lucide-react';
 import React from 'react';
-import { Link } from 'react-router';
 
 function Footer() {
     return (
