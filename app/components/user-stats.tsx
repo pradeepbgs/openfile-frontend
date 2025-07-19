@@ -100,10 +100,10 @@ const StatCard: React.FC<StatCardProps> = ({
   icon,
   className = ''
 }) => (
-  <div className={`bg-[#1e1e2f] rounded-lg px-4 py-3 ${className}`}>
+  <div className={`bg-white/5 rounded-lg px-4 py-3 ${className}`}>
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+        <p className="text-xs text-white font-medium text-gray-400 uppercase tracking-wider">
           {label}
         </p>
         <p className="text-lg font-semibold text-white mt-1">

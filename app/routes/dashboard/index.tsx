@@ -15,10 +15,10 @@ const DashboardLayout = () => {
   }, [])
 
   return (
-    <div>
-      <div className="relative flex min-h-screen bg-[#1a1b26]">
+    <div className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+      <div className="relative flex min-h-screen ">
         <Sidebar />
-        <main className="flex-1 bg-[#14151c] p-4 md:p-6 min-h-screen overflow-auto">
+        <main className="flex-1  p-4 md:p-6 min-h-screen overflow-auto">
           <Outlet />
         </main>
       </div>

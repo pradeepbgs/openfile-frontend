@@ -62,9 +62,9 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
   return (
     <div>
       <h2 className="text-2xl font-bold text-white mb-6">Recent Links</h2>
-      <div className="bg-[#1e1e2f] border border-neutral-700 rounded-lg shadow-md overflow-x-auto">
+      <div className="bg-white/5 border-white/5 rounded-lg shadow-md overflow-x-auto">
         <table className="min-w-full divide-y divide-neutral-700">
-          <thead className="bg-[#2a2b3d]">
+          <thead className="">
             <tr>
               <th className="px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                 <button
@@ -90,7 +90,7 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
                 const fullLink = `${import.meta.env.VITE_UPLOAD_URL}?token=${link.token}#key=${secret?.key}&iv=${secret?.iv}`;
 
                 return (
-                  <tr key={link.id} className="hover:bg-[#2a2b3d] transition-colors duration-200">
+                  <tr key={link.id} className=" transition-colors duration-200">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-3">
                         <FaCopy
@@ -107,14 +107,13 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
                           <FaLink
                             color='blue'
                             cursor={'pointer'}
-                            // onClick={() => }
                             size={18}
                           />
                         </Link>
 
                         <button
                           onClick={() => route(link.token, secret)}
-                          className="text-indigo-400 hover:text-indigo-300 text-sm truncate max-w-xs block"
+                          className="  hover:text-indigo-300 text-sm text-white truncate max-w-xs block"
                           rel="noopener noreferrer"
                           title={fullLink}
                         >

@@ -176,73 +176,70 @@ function UploadPage() {
   }
 
   return (
-    <div className="bg-[#121212] text-white min-h-screen">
-      <Header />
-      <div className="max-w-2xl mx-auto py-12 px-4">
-        <h1 className="text-2xl font-semibold text-center mb-6">Upload Files</h1>
+    <div className="text-white min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+  <Header />
+  <div className="max-w-2xl mx-auto py-12 px-4">
+    <h1 className="text-2xl font-semibold text-center mb-6">Upload Files</h1>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="bg-[#1f1f1f] border border-[#2c2c2c] p-6 rounded-lg shadow-md space-y-6">
-            {isFreeUser && (
-              <p className="text-sm text-gray-400">
-                Free users can upload up to {MAX_FREE_USER_UPLOAD_MB}MB in total.
-              </p>
-            )}
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="bg-white/5 border border-white/10 p-6 rounded-xl shadow-xl space-y-6 text-white backdrop-blur-md">
+        {isFreeUser && (
+          <p className="text-sm text-gray-400">
+            Free users can upload up to {MAX_FREE_USER_UPLOAD_MB}MB in total.
+          </p>
+        )}
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Select Files</label>
-              <input
-                type="file"
-                multiple
-                {...register("files")}
-                className="w-full bg-black text-white border border-gray-600 px-3 py-2 text-sm rounded-md file:border-0 file:bg-gray-800 file:text-white"
-              />
-              {errors.files && (
-                <p className="text-sm text-red-500 mt-1">
-                  {(errors.files as any).message || "Please select at least one file."}
-                </p>
-              )}
-            </div>
-
-            <p className="text-sm text-gray-400">
-              Total size: {(totalSize / 1024 / 1024).toFixed(2)} MB
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">Select Files</label>
+          <input
+            type="file"
+            multiple
+            {...register("files")}
+            className="w-full bg-white/10 text-white border border-white/10 px-3 py-2 text-sm rounded-md file:border-0 file:bg-gray-700 file:text-white hover:border-white/20"
+          />
+          {errors.files && (
+            <p className="text-sm text-red-400 mt-1">
+              {(errors.files as any).message || "Please select at least one file."}
             </p>
+          )}
+        </div>
 
-            {!errorMessage && isUploadSuccess && (
-              <p className="text-sm text-green-500 text-center">All files uploaded successfully!</p>
-            )}
+        <p className="text-sm text-gray-400">
+          Total size: {(totalSize / 1024 / 1024).toFixed(2)} MB
+        </p>
 
-            {errorMessage && (
-              <p className="text-sm text-red-500 text-center">{errorMessage}</p>
-            )}
+        {!errorMessage && isUploadSuccess && (
+          <p className="text-sm text-green-400 text-center">All files uploaded successfully!</p>
+        )}
 
-            <button
-              type="submit"
-              disabled={isUploading || !files?.length}
-              className={`relative w-full text-sm rounded text-white overflow-hidden border border-gray-600 transition ${isUploading || !files?.length
-                ? "bg-gray-600 cursor-not-allowed"
-                : "bg-black hover:bg-gray-800"
-                }`}
-            >
-              {
-                isUploading && (
-                  <div
-                    className="absolute top-0 left-0 h-full bg-green-600 transition-all duration-300 z-0"
-                    style={{ width: `${progress}%` }} >
-                  </div>
-                )
-              }
+        {errorMessage && (
+          <p className="text-sm text-red-400 text-center">{errorMessage}</p>
+        )}
 
-              <span className="relative z-10 block w-full text-center py-2">
-                {isUploading ? `Uploading... ${progress}%` : displayProgressMessage}
-              </span>
-
-            </button>
-          </div>
-
-        </form>
+        <button
+          type="submit"
+          disabled={isUploading || !files?.length}
+          className={`relative w-full text-sm rounded-md overflow-hidden border border-white/10 transition duration-300 ${
+            isUploading || !files?.length
+              ? "bg-white/10 cursor-not-allowed text-white/50"
+              : "bg-purple-600 hover:bg-purple-700 text-white"
+          }`}
+        >
+          {isUploading && (
+            <div
+              className="absolute top-0 left-0 h-full bg-green-600 transition-all duration-300 z-0"
+              style={{ width: `${progress}%` }}
+            />
+          )}
+          <span className="relative z-10 block w-full text-center py-2">
+            {isUploading ? `Uploading... ${progress}%` : displayProgressMessage}
+          </span>
+        </button>
       </div>
-    </div>
+    </form>
+  </div>
+</div>
+
   );
 }
 
