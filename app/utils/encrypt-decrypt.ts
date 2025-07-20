@@ -87,7 +87,7 @@ export const decryptAndDownloadFileWithCrypto = async (
         useFileStatusStore.getState().updateFileStatus("downloading files...")
         const fileResponse = await download_url.json();
 
-        const s3file = await fetch(fileResponse.url)
+        const s3file = await fetch(fileResponse.data.url)
         if (!s3file.ok) {
             console.warn("file doesn't exists")
             return
