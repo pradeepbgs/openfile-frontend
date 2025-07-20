@@ -122,11 +122,11 @@ function UploadPage() {
         setDisplayProgressMessage("Getting pre-signed upload URL...");
         const mimeType = file.type || 'application/octet-stream';
         const { url, key: s3Key } = await getUploadUrl(mimeType, token);
-
+        console.log('got url ', url, key)
 
         setDisplayProgressMessage(`Encrypting ${file.name}...`);
         const encryptedBlob = await encryptFileWithWorker(file, key, iv);
-
+        console.log('encrypted blob ', encryptedBlob)
         const encryptedFile = new File([encryptedBlob], file.name, {
           type: file.type,
         });
