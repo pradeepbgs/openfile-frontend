@@ -23,7 +23,8 @@ type TimeUnit = "minutes" | "hours" | "days";
 
 export default function CreateLinkPage() {
 
-  const userPlan = useAuth.getState().user?.plan;
+  const user = useAuth.getState().user;
+  const userPlan = user?.subscription.planName
   const maxUploadVal =
     userPlan === "free" ? 3 : userPlan === "pro" ? 5 : userPlan === "enterprise" ? 10 : 1;
 
@@ -216,7 +217,7 @@ export default function CreateLinkPage() {
             {isCreateLinkPending ? <Spinner size={15} /> : "Generate Link"}
           </button>
         </form>
-        
+
         <hr className="border-white/10 my-6" />
 
         {/* OUTPUT LINK */}
