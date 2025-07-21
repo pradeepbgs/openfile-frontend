@@ -21,8 +21,8 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
     toast("copied to clipboard")
   };
 
-  const route = (token: string, secret: { key: string, iv: string }) => {
-    navigate(`/dashboard/link?token=${token}#key=${secret?.key}&iv=${secret?.iv}`);
+  const route = (linkId:number,token: string, secret: { key: string, iv: string }) => {
+    navigate(`/dashboard/link/${linkId}?token=${token}#key=${secret?.key}&iv=${secret?.iv}`);
   };
 
   const { mutateAsync: deleteLink, isError, error, isSuccess, } = useDeleteLink()
@@ -112,7 +112,7 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
                         </Link>
 
                         <button
-                          onClick={() => route(link.token, secret)}
+                          onClick={() => route(link.id,link.token, secret)}
                           className="  hover:text-indigo-300 text-sm text-white truncate max-w-xs block"
                           rel="noopener noreferrer"
                           title={fullLink}

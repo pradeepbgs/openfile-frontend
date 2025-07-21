@@ -22,12 +22,13 @@ function Profile() {
   const handleRefresh = async () => {
     await refetch();
   }
+
   return (
     <div className="min-h-screen text-white px-4 md:px-10 py-10 md:py-5">
       {/* Stats Section */}
       <div className="mb-8">
         <UserStats
-          links={links}
+          links={links?.data}
           storageUsed={storageUsed?.storageUsed || 0}
           storageUsedLoading={storageUsedLoading}
           storageUsedError={storageUsedError}
@@ -36,7 +37,7 @@ function Profile() {
 
       {/* Recent Links Section */}
       <div>
-        <UserLinks links={links} handleRefresh={handleRefresh} />
+        <UserLinks links={links?.data} handleRefresh={handleRefresh} />
       </div>
     </div>
 

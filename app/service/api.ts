@@ -198,9 +198,9 @@ export function useUploadS3Mutation() {
 
 
 
-const fetchUserFiles = async (token: string) => {
+const fetchUserFiles = async (linkId:number,token: string) => {
     const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/${token}/files?page=${1}&limit=${10}`, {
+        `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/${linkId}/${token}/files?page=${1}&limit=${10}`, {
         method: "GET",
         credentials: 'include',
     });
@@ -212,10 +212,10 @@ const fetchUserFiles = async (token: string) => {
     return res.json();
 }
 
-export function useUserFilesQuery(token: string) {
+export function useUserFilesQuery(linkId:number,token: string) {
     return useQuery({
         queryKey: ["user-files"],
-        queryFn: () => fetchUserFiles(token),
+        queryFn: () => fetchUserFiles(linkId,token),
         enabled: !!token
     });
 }

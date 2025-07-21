@@ -10,7 +10,7 @@ export default [
         index('routes/dashboard/home.tsx'),
         route('profile', 'routes/dashboard/profile.tsx'),
         route('settings', 'routes/dashboard/settings.tsx'),
-        route('link', 'routes/dashboard/link.tsx'),
+        route('link/:id', 'routes/dashboard/link.tsx'),
     ]),
     route('plan','routes/dashboard/plan.tsx'),
     route('upload', 'routes/upload/index.tsx'),
