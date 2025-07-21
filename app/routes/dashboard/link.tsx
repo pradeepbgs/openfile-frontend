@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 import { useUserFilesQuery } from '~/service/api';
 import { decryptAndDownloadFileWithCrypto } from '~/utils/encrypt-decrypt';
 import { useFileStatusStore } from '~/zustand/fileStatusStore';
@@ -10,14 +10,15 @@ import Spinner from '~/components/spinner';
 function LinkPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") ?? "";
+  const { id } = useParams();
   const [decryptingFileId, setDecryptingFileId] = useState<number | null>(null);
 
   const hashParams = new URLSearchParams(window.location.hash.slice(1));
   const key = hashParams.get("key") || "";
   const iv = hashParams.get('iv') || ''
 
-  const { data, isError, error, isLoading } = useUserFilesQuery(token);
-  const files = data?.files;
+  const { data, isError, error, isLoading } = useUserFilesQuery(Number(id), token);
+  const files = data?.data;
   const msg = useFileStatusStore.getState().fileStatusMessages;
 
   if (isLoading) return <div className="min-h-screen flex justify-center items-center"><Spinner size={28} /></div>;

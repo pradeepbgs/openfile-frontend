@@ -24,7 +24,7 @@ type TimeUnit = "minutes" | "hours" | "days";
 export default function CreateLinkPage() {
 
   const user = useAuth.getState().user;
-  const userPlan = user?.subscription.planName
+  const userPlan = user?.subscription?.planName || 'free'
   const maxUploadVal =
     userPlan === "free" ? 3 : userPlan === "pro" ? 5 : userPlan === "enterprise" ? 10 : 1;
 
@@ -159,35 +159,6 @@ export default function CreateLinkPage() {
               </div>
             </div>
           </div>
-
-          {/* Secret Key + IV */}
-          {/* <div className="flex flex-col md:flex-row gap-3">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Secret Key
-              </label>
-              <input
-                type="text"
-                {...register("secretKey")}
-                className="w-full border border-neutral-600 bg-[#2a2b3d] text-white px-2 py-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              {errors.secretKey && (
-                <p className="text-sm text-red-400 mt-1">
-                  {errors.secretKey.message}
-                </p>
-              )}
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Initialization Vector (IV)
-              </label>
-              <input
-                type="text"
-                {...register("iv")}
-                className="w-full border border-neutral-600 bg-[#2a2b3d] text-white px-2 py-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-          </div> */}
 
           {/* Download checkbox + Generate key */}
           <div className="flex flex-wrap items-center gap-4">

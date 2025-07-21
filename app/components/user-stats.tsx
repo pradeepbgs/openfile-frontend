@@ -24,8 +24,8 @@ function UserStats(
     storageUsedError: Error | null
   }
 ) {
-  const totalUploads = links.reduce((sum, l) => sum + (l.uploadCount || 0), 0)
-  const activeLinks = links.filter(link => {
+  const totalUploads = links.length && links?.reduce((sum, l) => sum + (l.uploadCount || 0), 0)
+  const activeLinks = links && links?.filter(link => {
     if (!link.expiresAt) return true;
     return new Date(link.expiresAt) > new Date();
   }).length;
