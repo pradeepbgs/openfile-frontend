@@ -21,7 +21,7 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
     toast("copied to clipboard")
   };
 
-  const route = (linkId:number,token: string, secret: { key: string, iv: string }) => {
+  const route = (linkId: number, token: string, secret: { key: string, iv: string }) => {
     navigate(`/dashboard/link/${linkId}?token=${token}#key=${secret?.key}&iv=${secret?.iv}`);
   };
 
@@ -58,6 +58,7 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
     }
     loadSecrets()
   }, [])
+
 
   return (
     <div>
@@ -99,10 +100,10 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
                           onClick={() => handleCopyLink(fullLink)}
                           title="Copy link to clipboard"
                         />
-                        <Link 
-                        to={fullLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        <Link
+                          to={fullLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
                           <FaLink
                             color='blue'
@@ -112,12 +113,16 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
                         </Link>
 
                         <button
-                          onClick={() => route(link.id,link.token, secret)}
+                          onClick={() => route(link.id, link.token, secret)}
                           className="  hover:text-indigo-300 text-sm text-white truncate max-w-xs block"
                           rel="noopener noreferrer"
                           title={fullLink}
                         >
-                          {fullLink.length > 50 ? `${fullLink.substring(0, 50)}...` : fullLink}
+                          {
+                            link.name
+                              ? link.name
+                              : fullLink.length > 50 ? `${fullLink.substring(0, 50)}...` : fullLink
+                          }
                         </button>
                       </div>
                     </td>

@@ -1,6 +1,7 @@
 export interface LinkItem {
   id: number;
   iv: string;
+  name?:string,
   maxUploads: number;
   secretKey: number;
   token: string;
