@@ -16,12 +16,14 @@ function UserStats(
     links,
     storageUsed,
     storageUsedLoading,
-    storageUsedError
+    storageUsedError,
+    linkCount,
   }: {
     links: LinkItem[],
     storageUsed: number,
     storageUsedLoading: boolean,
-    storageUsedError: Error | null
+    storageUsedError: Error | null,
+    linkCount: number,
   }
 ) {
   const totalUploads = links.length && links?.reduce((sum, l) => sum + (l.uploadCount || 0), 0)
@@ -35,7 +37,7 @@ function UserStats(
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <StatCard
         label="Total Links"
-        value={links.length}
+        value={linkCount}
         icon={
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path

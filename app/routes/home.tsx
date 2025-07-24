@@ -11,7 +11,7 @@ function App() {
       <Header />
       {/* Hero Section */}
       <section className="relative px-6 py-20 overflow-hidden">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 md:px-10">
           <div className="space-y-8">
             <h1 className="text-5xl lg:text-6xl font-bold text-white leading-tight">
               Receive Files

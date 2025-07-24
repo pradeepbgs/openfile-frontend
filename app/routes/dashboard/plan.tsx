@@ -3,7 +3,7 @@ import { useAuth } from '~/zustand/store';
 const plans = [
     {
         name: 'Free',
-        price: '₹0',
+        price: '$0',
         description: 'Perfect for light and personal use.',
         features: [
             '3 upload links per day',
@@ -15,7 +15,7 @@ const plans = [
     },
     {
         name: 'Pro',
-        price: '₹199/month',
+        price: '$2.99/month',
         description: 'For active users who need flexibility.',
         features: [
             '50 upload links per day',
@@ -27,7 +27,7 @@ const plans = [
     },
     {
         name: 'Enterprise',
-        price: '₹999/month',
+        price: '$4.99/month',
         description: 'For teams and high-volume usage.',
         features: [
             'Unlimited upload links',
@@ -39,17 +39,14 @@ const plans = [
     },
 ];
 
-
 export default function PlansPage() {
-
-    const user = useAuth.getState().user
-
-    const currentPlan = user?.plan
-    // const navigate = useNavigate();
+    const user = useAuth.getState().user;
+    const currentPlan = user?.plan;
 
     const handleSelectPlan = (plan: string) => {
-        // console.log("Selected plan:", plan);
-        // navigate(`/subscribe?plan=${plan}`);
+        // navigate to subscribe page with selected plan
+        // Example: navigate(`/subscribe?plan=${plan}`);
+        console.log("Selected plan:", plan);
     };
 
     return (
@@ -58,22 +55,22 @@ export default function PlansPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl">
                 {plans.map((plan) => (
                     <div
-                        key={plan?.name}
-                        className={`p-6 rounded-2xl shadow-xl transition duration-300 ${currentPlan === plan?.planKey
-                                ? "border border-purple-500 bg-white/5 backdrop-blur-md"
-                                : "border border-white/10 bg-white/5 hover:bg-white/10 hover:border-purple-500"
+                        key={plan.name}
+                        className={`p-6 rounded-2xl shadow-xl transition duration-300 ${currentPlan === plan.planKey
+                            ? "border border-purple-500 bg-white/5 backdrop-blur-md"
+                            : "border border-white/10 bg-white/5 hover:bg-white/10 hover:border-purple-500"
                             }`}
                     >
-                        <h2 className="text-xl font-semibold mb-2">{plan?.name}</h2>
-                        <p className="text-purple-400 text-2xl font-bold mb-4">{plan?.price}</p>
-                        <p className="text-gray-300 mb-4">{plan?.description}</p>
+                        <h2 className="text-xl font-semibold mb-2">{plan.name}</h2>
+                        <p className="text-purple-400 text-2xl font-bold mb-4">{plan.price}</p>
+                        <p className="text-gray-300 mb-4">{plan.description}</p>
                         <ul className="text-sm space-y-2 text-gray-200">
-                            {plan?.features?.map((f, i) => (
+                            {plan.features.map((f, i) => (
                                 <li className="text-green-400" key={i}>✓ {f}</li>
                             ))}
                         </ul>
 
-                        {currentPlan === plan?.planKey ? (
+                        {currentPlan === plan.planKey ? (
                             <button
                                 disabled
                                 className="mt-6 w-full bg-gray-700 text-white/70 py-2 rounded-md cursor-not-allowed"
@@ -82,16 +79,15 @@ export default function PlansPage() {
                             </button>
                         ) : (
                             <button
-                                onClick={() => handleSelectPlan(plan?.planKey)}
+                                onClick={() => handleSelectPlan(plan.planKey)}
                                 className="mt-6 w-full bg-purple-600 hover:bg-purple-700 transition text-white py-2 rounded-md"
                             >
-                                Choose {plan?.name}
+                                Choose {plan.name}
                             </button>
                         )}
                     </div>
                 ))}
             </div>
         </div>
-
     );
 }
