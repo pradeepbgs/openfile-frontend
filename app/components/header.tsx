@@ -6,7 +6,7 @@ import OpenfileLogo from './openfile-logo'
 function Header() {
   const isLoggedIn = useAuth.getState()?.user?.email
   return (
-    <header className="relative z-10 px-6 py-4">
+    <header className="relative  z-10 px-6 py-4">
       <nav className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <OpenfileLogo />

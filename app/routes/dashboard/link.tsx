@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useUserFilesQuery } from '~/service/api';
 import { decryptAndDownloadFileWithCrypto } from '~/utils/encrypt-decrypt';
@@ -11,18 +11,26 @@ function LinkPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") ?? "";
   const { id } = useParams();
+
+  const [page, setPage] = useState<number>(1);
   const [decryptingFileId, setDecryptingFileId] = useState<number | null>(null);
+  const limit = 10;
+
 
   const hashParams = new URLSearchParams(window.location.hash.slice(1));
   const key = hashParams.get("key") || "";
   const iv = hashParams.get('iv') || ''
 
-  const { data, isError, error, isLoading } = useUserFilesQuery(Number(id), token);
+  const { data, isError, error, isLoading, refetch } = useUserFilesQuery(Number(id), token, page, limit);
   const files = data?.data;
+  const currentPage = data?.page
   const msg = useFileStatusStore.getState().fileStatusMessages;
 
+  useEffect(() => {
+    refetch();
+  }, [page]);
+
   if (isLoading) return <div className="min-h-screen flex justify-center items-center"><Spinner size={28} /></div>;
-  if (!files?.length) return <p className="p-4 text-gray-400">No files available.</p>;
   if (isError) return <p className="h-full flex justify-center items-center p-4 text-red-400">{error.message}</p>;
 
   const handleDecryptDownload = async (file: FileItem) => {
@@ -34,9 +42,22 @@ function LinkPage() {
     }
   };
 
+  const loadNextPage = async () => {
+    setPage((prev) => {
+      return prev + 1
+    })
+  }
+
+  const loadPrevPage = async () => {
+    setPage((prev) => prev - 1)
+  }
+
+
+
+
   return (
     <div className=" max-w-6xl mx-auto min-h-screen text-white">
-      <h1 className="text-3xl font-bold mb-6 text-center text-white">Your Encrypted Files</h1>
+      {/* <h1 className="text-3xl font-bold mb-6 text-center text-white">Your Encrypted Files</h1> */}
 
       <h3 className="text-sm text-yellow-400 text-center mb-4 max-w-3xl mx-auto">
         ⚠️ Please note: When you click "Decrypt", the file will first be downloaded and then decrypted in your browser.
@@ -54,6 +75,34 @@ function LinkPage() {
             decryptMsg={msg}
           />
         ))}
+      </div>
+
+      {
+        !files?.length && (
+          <div className='flex justify-center items-center'>
+            <p className="p-4 text-gray-300">No files available.</p>
+          </div>
+        )
+      }
+
+      <div className="mt-6 flex justify-center items-center gap-3">
+        <button
+          className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
+          onClick={loadPrevPage}
+          disabled={page === 1}
+        >
+          Previous
+        </button>
+        <span className="text-white">
+          Page {currentPage} of
+        </span>
+        <button
+          className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
+          onClick={loadNextPage}
+        // disabled={page === totalPages}
+        >
+          Next
+        </button>
       </div>
     </div>
   );

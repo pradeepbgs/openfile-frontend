@@ -106,8 +106,8 @@ export function useValidateTokenQuery(token: string) {
 }
 
 
-const fetchUserLinks = async () => {
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link`, {
+const fetchUserLinks = async ({ page = 1, limit = 10 }) => {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link?page=${page}&limit=${limit}`, {
         method: "GET",
         credentials: 'include',
     });
@@ -118,10 +118,10 @@ const fetchUserLinks = async () => {
 
     return res.json();
 };
-export function useUserLinksQuery() {
+export function useUserLinksQuery(page: number, limit: number = 10) {
     return useQuery({
         queryKey: ["user-links"],
-        queryFn: fetchUserLinks,
+        queryFn: () => fetchUserLinks({ page, limit }),
         staleTime: Infinity,
         gcTime: 1000 * 60 * 10,
         refetchOnWindowFocus: false,
@@ -198,9 +198,9 @@ export function useUploadS3Mutation() {
 
 
 
-const fetchUserFiles = async (linkId:number,token: string) => {
+const fetchUserFiles = async (linkId: number, token: string, page: number, limit: number) => {
     const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/${linkId}/${token}/files?page=${1}&limit=${10}`, {
+        `${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/${linkId}/${token}/files?page=${page}&limit=${limit}`, {
         method: "GET",
         credentials: 'include',
     });
@@ -212,10 +212,10 @@ const fetchUserFiles = async (linkId:number,token: string) => {
     return res.json();
 }
 
-export function useUserFilesQuery(linkId:number,token: string) {
+export function useUserFilesQuery(linkId: number, token: string, page: number, limit: number) {
     return useQuery({
         queryKey: ["user-files"],
-        queryFn: () => fetchUserFiles(linkId,token),
+        queryFn: () => fetchUserFiles(linkId, token, page, limit),
         enabled: !!token
     });
 }
@@ -244,7 +244,7 @@ export const getUploadUrl = async (mimeType: string, token: string | null) => {
 };
 
 
-const updateS3UpoadDB = async ({ s3Key, size, token, filename }: {  s3Key: string, size: number, token: string|null, filename: string }) => {
+const updateS3UpoadDB = async ({ s3Key, size, token, filename }: { s3Key: string, size: number, token: string | null, filename: string }) => {
     try {
         const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/file/notify-upload?token=${token}`, {
             method: "POST",
@@ -356,5 +356,34 @@ const deleteLink = async (id: number) => {
 export function useDeleteLink() {
     return useMutation({
         mutationFn: deleteLink,
+    })
+}
+
+const linkCoumt = async () => {
+    try {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link/count`, {
+            method: "GET",
+            credentials: 'include',
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch link count");
+        }
+
+        return res.json();
+    } catch (error) {
+        console.error("Error fetching link count:", error);
+        throw error;
+    }
+}
+
+export function useLinkCount() {
+    return useQuery({
+        queryKey: ["link-count"],
+        queryFn: linkCoumt,
+        // staleTime: Infinity,
+        gcTime: 1000 * 60 * 10,
+        refetchOnWindowFocus: false,
+        retry: false,
     })
 }
