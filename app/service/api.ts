@@ -106,8 +106,8 @@ export function useValidateTokenQuery(token: string) {
 }
 
 
-const fetchUserLinks = async ({ page = 1, limit = 10 }) => {
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link?page=${page}&limit=${limit}`, {
+const fetchUserLinks = async ({ page = 1, searchQuery = '', limit = 10 }) => {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_APP_URL}/api/v1/link?page=${page}&limit=${limit}&query=${searchQuery}`, {
         method: "GET",
         credentials: 'include',
     });
@@ -118,10 +118,10 @@ const fetchUserLinks = async ({ page = 1, limit = 10 }) => {
 
     return res.json();
 };
-export function useUserLinksQuery(page: number, limit: number = 10) {
+export function useUserLinksQuery(page: number, searchQuery: string, limit: number = 10) {
     return useQuery({
         queryKey: ["user-links"],
-        queryFn: () => fetchUserLinks({ page, limit }),
+        queryFn: () => fetchUserLinks({ page, searchQuery, limit }),
         staleTime: Infinity,
         gcTime: 1000 * 60 * 10,
         refetchOnWindowFocus: false,

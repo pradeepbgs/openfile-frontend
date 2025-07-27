@@ -1,21 +1,33 @@
-
 import { useLinkCount, useStorageUsedQuery, useUserLinksQuery } from "~/service/api";
-import type { LinkItem } from "types/types";
 import UserLinks from "~/components/user-links";
 import UserStats from "~/components/user-stats";
 import Spinner from "~/components/spinner";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 function Profile() {
   const [page, setPage] = useState<number>(1);
+  const [searchText, setSearchText] = useState('')
+  const [debouncedSearch, setDebounceSearch] = useState<string | null>(null);
+
   const limit = 10;
-  const { data, isLoading, isError, refetch } = useUserLinksQuery(page, limit);
+  const { data, isLoading, isError, refetch } = useUserLinksQuery(page, searchText, limit);
   const { data: storageUsed, isLoading: storageUsedLoading, error: storageUsedError } = useStorageUsedQuery()
   const { data: LinkCounts } = useLinkCount()
 
+
+  useEffect(() =>{
+    const handler = setTimeout(() =>{
+      setDebounceSearch(searchText);
+    },300)
+
+    return () => {
+      clearTimeout(handler);
+    }
+  },[searchText])
+
   useEffect(() => {
     refetch();
-  }, [page]);
+  }, [page,debouncedSearch]);
 
   if (isLoading) return <div className="min-h-screen flex justify-center items-center"><Spinner size={28} /></div>;
 
@@ -45,6 +57,12 @@ function Profile() {
   }
 
 
+  const handleSearch = async (e) => {
+    e.preventDefault()
+    refetch()
+  }
+
+
   return (
     <div className="min-h-screen text-white px-4 md:px-10 py-10 md:py-5">
       {/* Stats */}
@@ -57,6 +75,26 @@ function Profile() {
           linkCount={LinkCounts?.links}
         />
       </div>
+
+      {/* Search bar  */}
+      <form
+        className="flex justify-center items-center gap-3 mb-6"
+        onSubmit={handleSearch}
+      >
+        <input
+          type="text"
+          placeholder="Search links by name or URL"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="w-full px-3 py-2 bg-white/5 text-white rounded"
+        />
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded"
+        >
+          Search
+        </button>
+      </form>
 
       {/* Recent Links */}
       <UserLinks
