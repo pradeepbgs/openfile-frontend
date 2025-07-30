@@ -5,7 +5,9 @@ import type { createLinkArgs } from "types/types";
 import { useAuth } from "~/zustand/store";
 import axios from 'axios'
 import { useUploadProgressStore } from "~/zustand/progress-store";
-import { getCryptoSecret } from "~/utils/crypto-store";
+import { useUploadStatusStore } from "~/zustand/upload-status-store";
+
+const backendUrl = import.meta.env.VITE_BACKEND_APP_URL
 
 export function useGoogleLoginHandler() {
 
@@ -20,7 +22,7 @@ export function useGoogleLoginHandler() {
         }
 
         try {
-            const res = await fetch(`/api/v1/auth/google`, {
+            const res = await fetch(`${backendUrl}/api/v1/auth/google`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ token }),
@@ -48,7 +50,7 @@ export function useGoogleLoginHandler() {
 
 export const authCheck = async () => {
     try {
-        const res = await fetch(`/api/v1/auth/check`, {
+        const res = await fetch(`${backendUrl}/api/v1/auth/check`, {
             method: "GET",
             credentials: 'include'
         });
@@ -68,7 +70,7 @@ export const authCheck = async () => {
 
 export const logout = async () => {
     try {
-        const res = await fetch(`/api/v1/auth/logout`, {
+        const res = await fetch(`${backendUrl}/api/v1/auth/logout`, {
             method: "GET",
             credentials: 'include'
         });
@@ -85,7 +87,7 @@ export const logout = async () => {
 }
 
 const fetchValidateToken = async (token: string) => {
-    const res = await fetch(`/api/v1/link/validate?token=${token}`, {
+    const res = await fetch(`${backendUrl}/api/v1/link/validate?token=${token}`, {
         method: "GET",
         credentials: 'include',
     });
@@ -107,7 +109,7 @@ export function useValidateTokenQuery(token: string) {
 
 
 const fetchUserLinks = async ({ page = 1, searchQuery = '', limit = 10 }) => {
-    const res = await fetch(`/api/v1/link?page=${page}&limit=${limit}&query=${searchQuery}`, {
+    const res = await fetch(`${backendUrl}/api/v1/link?page=${page}&limit=${limit}&query=${searchQuery}`, {
         method: "GET",
         credentials: 'include',
     });
@@ -132,7 +134,7 @@ export function useUserLinksQuery(page: number, searchQuery: string, limit: numb
 
 const uploadFiles = async ({ formData, token }: { formData: FormData; token: string }) => {
 
-    const res = await fetch(`/api/v1/file?token=${token}`, {
+    const res = await fetch(`${backendUrl}/api/v1/file?token=${token}`, {
         method: "POST",
         body: formData,
         headers: {
@@ -155,7 +157,9 @@ export function useUploadFilesMutation() {
 }
 
 
-const uploadToS3 = async ({ encryptFile, url, type }: { encryptFile: Blob, url: string, type: string }) => {
+const uploadToS3 = async ({ encryptFile, url, type, name }: { encryptFile: Blob, url: string, type: string, name: string }) => {
+    const { updateProgress, updateStatus } = useUploadStatusStore.getState();
+
     try {
         // const s3Response = await fetch(url, {
         //     method: 'PUT',
@@ -176,6 +180,8 @@ const uploadToS3 = async ({ encryptFile, url, type }: { encryptFile: Blob, url: 
             onUploadProgress: (progressEvent) => {
                 const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent?.total || 1));
                 useUploadProgressStore.getState().setProgress(percentCompleted)
+                updateProgress(name, percentCompleted);
+                updateStatus(name, "uploading");
             }
         })
         if (!(res.status >= 200 && res.status < 300)) {
@@ -200,7 +206,7 @@ export function useUploadS3Mutation() {
 
 const fetchUserFiles = async (linkId: number, token: string, page: number, limit: number) => {
     const res = await fetch(
-        `/api/v1/file/${linkId}/${token}/files?page=${page}&limit=${limit}`, {
+        `${backendUrl}/api/v1/file/${linkId}/${token}/files?page=${page}&limit=${limit}`, {
         method: "GET",
         credentials: 'include',
     });
@@ -223,7 +229,7 @@ export function useUserFilesQuery(linkId: number, token: string, page: number, l
 
 export const getUploadUrl = async (mimeType: string, token: string | null) => {
     try {
-        const res = await fetch(`/api/v1/file/upload-url?token=${token}`, {
+        const res = await fetch(`${backendUrl}/api/v1/file/upload-url?token=${token}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -246,7 +252,7 @@ export const getUploadUrl = async (mimeType: string, token: string | null) => {
 
 const updateS3UpoadDB = async ({ s3Key, size, token, filename }: { s3Key: string, size: number, token: string | null, filename: string }) => {
     try {
-        const res = await fetch(`/api/v1/file/notify-upload?token=${token}`, {
+        const res = await fetch(`${backendUrl}/api/v1/file/notify-upload?token=${token}`, {
             method: "POST",
             credentials: "include",
             headers: {
@@ -278,7 +284,7 @@ export const useUpdateS3UploadDB = () => {
 
 const createLink = async ({ payload, navigate, secretKey, iv }: createLinkArgs) => {
     try {
-        const res = await fetch(`/api/v1/link`, {
+        const res = await fetch(`${backendUrl}/api/v1/link`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -314,7 +320,7 @@ export function useCreateLinkMutation() {
 
 const fetchStorageUsed = async () => {
     try {
-        const res = await fetch(`/api/v1/file/storage-used`, {
+        const res = await fetch(`${backendUrl}/api/v1/file/storage-used`, {
             method: "GET",
             credentials: 'include',
         });
@@ -343,7 +349,7 @@ export function useStorageUsedQuery() {
 
 const deleteLink = async (id: number) => {
     try {
-        const res = await axios.delete(`/api/v1/link/${id}`, {
+        const res = await axios.delete(`${backendUrl}/api/v1/link/${id}`, {
             withCredentials: true
         })
         return await res
@@ -361,7 +367,7 @@ export function useDeleteLink() {
 
 const linkCoumt = async () => {
     try {
-        const res = await fetch(`/api/v1/link/count`, {
+        const res = await fetch(`${backendUrl}/api/v1/link/count`, {
             method: "GET",
             credentials: 'include',
         });

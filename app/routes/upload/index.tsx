@@ -9,43 +9,39 @@ import {
   useUploadS3Mutation,
   useValidateTokenQuery,
 } from "~/service/api";
-import { getCryptoSecret } from "~/utils/crypto-store";
 import { useUploadProgressStore } from "~/zustand/progress-store";
 import { useAuth } from "~/zustand/store";
-import { lookup } from "mime-types";
 import Spinner from "~/components/spinner";
+import { SelectedFilesList } from "~/components/selected-file";
+import { useUploadStatusStore } from "~/zustand/upload-status-store";
 
 const MAX_FREE_USER_UPLOAD_MB = import.meta.env.VIET_MAX_FREE_USER_UPLOAD_MB ?? 200 as number;
 
-const getSafeMimeType = (file: File): string => {
-  return file.type || lookup(file.name) || "application/octet-stream";
-};
+
 
 function UploadPage() {
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
   const hashParams = new URLSearchParams(window.location.hash.slice(1));
   const key = hashParams.get("key") || ""
   const iv = hashParams.get("iv") || ""
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [totalSize, setTotalSize] = useState<number>(0);
-  const [displayProgressMessage, setDisplayProgressMessage] = useState<string>("Upload Files");
 
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
 
   const user = useAuth.getState().user;
-  const isFreeUser = user?.plan === "free";
-
-  const progress = useUploadProgressStore((state) => state.progress);
+  const isFreeUser = user?.subscription.planName === "free";
 
   const {
-    register,
     handleSubmit,
     formState: { errors },
-    watch,
   } = useForm();
 
-  const files = watch("files");
+  const files = selectedFiles
 
   const {
     isError: isTokenInvalid,
@@ -57,6 +53,7 @@ function UploadPage() {
     useUploadS3Mutation();
 
   const { mutateAsync: UpdateDbS3 } = useUpdateS3UploadDB();
+  const { addFile, updateStatus } = useUploadStatusStore.getState();
 
   useEffect(() => {
     if (!files || files.length === 0) {
@@ -65,15 +62,22 @@ function UploadPage() {
     }
 
     let size = 0;
-    const fileList: FileItem[] = Array.from(files);
-    for (const file of fileList) size += file.size;
+
+    selectedFiles.forEach((file) => {
+      size += file.size
+      const id = file.name;
+      addFile({ id, name: file.name, progress: 0, status: "pending" });
+    });
     setTotalSize(size);
-  }, [files]);
+
+
+  }, [selectedFiles]);
 
   const onSubmit = async (data: any) => {
+    setIsProcessing(true);
     setErrorMessage("");
 
-    if (!data.files || data.files.length === 0) {
+    if (!selectedFiles || selectedFiles.length === 0) {
       setErrorMessage("Please select at least one file.");
       return;
     }
@@ -83,7 +87,6 @@ function UploadPage() {
       return;
     }
 
-    const files: File[] = Array.from(data.files);
     const maxTotalSize = isFreeUser ? MAX_FREE_USER_UPLOAD_MB * 1024 * 1024 : Infinity;
 
     if (totalSize > maxTotalSize) {
@@ -94,58 +97,96 @@ function UploadPage() {
     }
 
     // create a worker
-    const worker = new Worker(
-      new URL("../../utils/encryptWorker.ts", import.meta.url),
-      { type: "module" }
-    );
+    // const worker = new Worker(
+    //   new URL("../../utils/encryptWorker.ts", import.meta.url),
+    //   { type: "module" }
+    // );
 
-    const encryptFileWithWorker = (file: File, secretKey: string, iv: string): Promise<Blob> => {
-      return new Promise((resolve, reject) => {
-        worker.postMessage({ file, secretKey, iv });
+    // const encryptFileWithWorker = (file: File, secretKey: string, iv: string): Promise<Blob> => {
+    //   return new Promise((resolve, reject) => {
+    //     worker.postMessage({ file, secretKey, iv });
 
-        worker.onerror = (err) => {
-          reject("Worker error: " + err.message);
-        };
+    //     worker.onerror = (err) => {
+    //       reject("Worker error: " + err.message);
+    //     };
 
-        worker.onmessage = (event) => {
-          if (event.data.error) {
-            reject(event.data.error);
-          } else {
-            resolve(event.data);
-          }
-        };
-      })
-    }
+    //     worker.onmessage = (event) => {
+    //       if (event.data.error) {
+    //         reject(event.data.error);
+    //       } else {
+    //         resolve(event.data);
+    //       }
+    //     };
+    //   })
+    // }
 
     try {
-      for (const file of files) {
-        setDisplayProgressMessage("Getting pre-signed upload URL...");
+      // for (const file of files) {
+      //   const mimeType = file.type || 'application/octet-stream';
+      //   const { url, key: s3Key } = await getUploadUrl(mimeType, token);
+
+      //   const encryptedBlob = await encryptFileWithWorker(file, key, iv);
+
+      //   const encryptedFile = new File([encryptedBlob], file.name, {
+      //     type: file.type,
+      //   });
+
+      //   await uploadFilesMutation({ encryptFile: encryptedBlob, type: mimeType, url, name: file.name });
+
+      //   await UpdateDbS3({ s3Key, size: encryptedFile.size, token, filename: file.name });
+      //   updateStatus(file.name, "done");
+      // }
+
+      const uploadArray = files.map(async (file) => {
+
+        const worker = new Worker(
+          new URL("../../utils/encryptWorker.ts", import.meta.url),
+          { type: "module" }
+        );
+
+        const encryptFileWithWorker = (file: File, secretKey: string, iv: string): Promise<Blob> => {
+          return new Promise((resolve, reject) => {
+            worker.postMessage({ file, secretKey, iv });
+
+            worker.onerror = (err) => {
+              reject("Worker error: " + err.message);
+            };
+
+            worker.onmessage = (event) => {
+              if (event.data.error) {
+                reject(event.data.error);
+              } else {
+                resolve(event.data);
+              }
+            };
+          })
+        }
+
         const mimeType = file.type || 'application/octet-stream';
         const { url, key: s3Key } = await getUploadUrl(mimeType, token);
 
-
-        setDisplayProgressMessage(`Encrypting ${file.name}...`);
         const encryptedBlob = await encryptFileWithWorker(file, key, iv);
 
         const encryptedFile = new File([encryptedBlob], file.name, {
           type: file.type,
         });
 
-        setDisplayProgressMessage(`Uploading ${file.name}...`);
-        await uploadFilesMutation({ encryptFile: encryptedBlob, type: mimeType, url });
+        await uploadFilesMutation({ encryptFile: encryptedBlob, type: mimeType, url, name: file.name });
 
-        setDisplayProgressMessage(`Updating database for ${file.name}...`);
         await UpdateDbS3({ s3Key, size: encryptedFile.size, token, filename: file.name });
-      }
+        updateStatus(file.name, "done");
+        worker.terminate()
+      })
 
-      setDisplayProgressMessage("All files uploaded successfully!");
+      await Promise.all(uploadArray)
+
     } catch (error) {
       console.error("Upload process failed:", error);
       const message = error instanceof Error ? error.message : String(error);
       setErrorMessage(`Upload failed: ${message}`);
     } finally {
-      worker.terminate();
-      setDisplayProgressMessage("Upload Files");
+      setIsProcessing(false);
+      // worker.terminate();
       useUploadProgressStore.getState().resetProgress();
     }
   }
@@ -161,9 +202,9 @@ function UploadPage() {
 
 
   if (isTokenValidating)
-  return <div className="text-center bg-black w-ful h-screen text-gray-100">
-    <Spinner size={20} color="white"/>
-  </div>;
+    return <div className="text-center bg-black w-ful h-screen text-gray-100">
+      <Spinner size={20} color="white" />
+    </div>;
 
   if (isTokenInvalid) {
     return (
@@ -177,68 +218,78 @@ function UploadPage() {
 
   return (
     <div className="text-white min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
-  <Header />
-  <div className="max-w-2xl mx-auto py-12 px-4">
-    <h1 className="text-2xl font-semibold text-center mb-6">Upload Files</h1>
+      <Header />
 
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="bg-white/5 border border-white/10 p-6 rounded-xl shadow-xl space-y-6 text-white backdrop-blur-md">
-        {isFreeUser && (
-          <p className="text-sm text-gray-400">
-            Free users can upload up to {MAX_FREE_USER_UPLOAD_MB}MB in total.
-          </p>
-        )}
+      <div className={`mx-auto py-12 px-4 ${totalSize > 0 ? 'md:flex md:justify-center md:items-center max-w-6xl' : 'max-w-2xl'} md:gap-6 md:items-start`}>
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full md:w-1/2">
+          <h1 className="text-2xl font-semibold text-center mb-6">Upload Files</h1>
+          <div className="bg-white/5 border border-white/10 p-6 rounded-xl shadow-xl space-y-6 text-white backdrop-blur-md">
+            {isFreeUser && (
+              <p className="text-sm text-gray-400">
+                Free users can upload up to {MAX_FREE_USER_UPLOAD_MB}MB in total.
+              </p>
+            )}
 
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Select Files</label>
-          <input
-            type="file"
-            multiple
-            {...register("files")}
-            className="w-full bg-white/10 text-white border border-white/10 px-3 py-2 text-sm rounded-md file:border-0 file:bg-gray-700 file:text-white hover:border-white/20"
-          />
-          {errors.files && (
-            <p className="text-sm text-red-400 mt-1">
-              {(errors.files as any).message || "Please select at least one file."}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Select Files</label>
+              <input
+                type="file"
+                multiple
+                onChange={(e) => {
+                  const newFiles = Array.from(e.target.files || []);
+                  setSelectedFiles((prev) => [...prev, ...newFiles]);
+                }}
+
+                className="w-full bg-white/10 text-white border border-white/10 px-3 py-2 text-sm rounded-md file:border-0 file:bg-gray-700 file:text-white hover:border-white/20"
+              />
+              {errors.files && (
+                <p className="text-sm text-red-400 mt-1">
+                  {(errors.files as any).message || "Please select at least one file."}
+                </p>
+              )}
+            </div>
+
+            <p className="text-sm text-gray-400">
+              Total size: {(totalSize / 1024 / 1024).toFixed(2)} MB
             </p>
-          )}
+
+            {/* {!errorMessage && isUploadSuccess && (
+              <p className="text-sm text-green-400 text-center">All files uploaded successfully!</p>
+            )} */}
+
+            {errorMessage && (
+              <p className="text-sm text-red-400 text-center">{errorMessage}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isUploading || !files?.length}
+              className={`relative w-full text-sm rounded-md overflow-hidden border border-white/10 transition duration-300 ${isUploading || !files?.length
+                ? "bg-white/10 cursor-not-allowed text-white/50"
+                : "bg-purple-600 hover:bg-purple-700 text-white"
+                }`}
+            >
+              {/* {isUploading && (
+                <div
+                  className="absolute top-0 left-0 h-full bg-green-600 transition-all duration-300 z-0"
+                  style={{ width: `${progress}%` }}
+                />
+              )} */}
+              <span className="relative z-10 block w-full text-center py-2">
+                {isProcessing ? <Spinner size={16} color="white" /> : "Upload"}
+              </span>
+
+            </button>
+          </div>
+        </form>
+
+        <div className="w-full mt-5 md:mt-0  md:w-1/2">
+          <SelectedFilesList files={files} />
         </div>
 
-        <p className="text-sm text-gray-400">
-          Total size: {(totalSize / 1024 / 1024).toFixed(2)} MB
-        </p>
-
-        {!errorMessage && isUploadSuccess && (
-          <p className="text-sm text-green-400 text-center">All files uploaded successfully!</p>
-        )}
-
-        {errorMessage && (
-          <p className="text-sm text-red-400 text-center">{errorMessage}</p>
-        )}
-
-        <button
-          type="submit"
-          disabled={isUploading || !files?.length}
-          className={`relative w-full text-sm rounded-md overflow-hidden border border-white/10 transition duration-300 ${
-            isUploading || !files?.length
-              ? "bg-white/10 cursor-not-allowed text-white/50"
-              : "bg-purple-600 hover:bg-purple-700 text-white"
-          }`}
-        >
-          {isUploading && (
-            <div
-              className="absolute top-0 left-0 h-full bg-green-600 transition-all duration-300 z-0"
-              style={{ width: `${progress}%` }}
-            />
-          )}
-          <span className="relative z-10 block w-full text-center py-2">
-            {isUploading ? `Uploading... ${progress}%` : displayProgressMessage}
-          </span>
-        </button>
       </div>
-    </form>
-  </div>
-</div>
+
+    </div>
 
   );
 }
