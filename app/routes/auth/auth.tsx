@@ -25,7 +25,7 @@ export default function AuthPage() {
                             <div className="mt-3">
                                 <button
                                     onClick={openHelpPage}
-                                    className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-1.5 px-3 rounded"
+                                    className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-1.5 px-3 mt-2 rounded"
                                 >
                                     How to Enable Third-Party Cookies
                                 </button>
