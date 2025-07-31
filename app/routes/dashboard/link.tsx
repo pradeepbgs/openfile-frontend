@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useUserFilesQuery } from '~/service/api';
 import { decryptAndDownloadFileWithCrypto } from '~/utils/encrypt-decrypt';
-import { useFileStatusStore } from '~/zustand/fileStatusStore';
 import type { FileItem } from 'types/types';
 import { FileCard } from '~/components/file-card';
 import Spinner from '~/components/spinner';
@@ -24,7 +23,6 @@ function LinkPage() {
   const { data, isError, error, isLoading, refetch } = useUserFilesQuery(Number(id), token, page, limit);
   const files = data?.data;
   const currentPage = data?.page
-  const msg = useFileStatusStore.getState().fileStatusMessages;
 
   useEffect(() => {
     refetch();
@@ -72,7 +70,6 @@ function LinkPage() {
             file={file}
             onDownload={() => handleDecryptDownload(file)}
             isDecrypting={decryptingFileId === file.id}
-            decryptMsg={msg}
           />
         ))}
       </div>
