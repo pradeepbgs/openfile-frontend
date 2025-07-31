@@ -1,91 +1,43 @@
 import Header from "~/components/header";
 import { GoogleLogin } from '@react-oauth/google';
 import { useGoogleLoginHandler } from "~/service/api";
-
-// type AuthFormData = z.infer<typeof AuthSchema>
+import { useState, useEffect } from "react";
 
 export default function AuthPage() {
+    const handleGoogleLogin = useGoogleLoginHandler();
+    const [showCookieWarning, setShowCookieWarning] = useState(true); // or use detection logic
 
-    // const [isSignup, setIsSignup] = useState(false);
+    const openHelpPage = () => {
+        window.open("https://support.google.com/accounts/answer/61416?hl=en", "_blank");
+    };
 
-    // const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AuthFormData>({
-    //     resolver: zodResolver(AuthSchema),
-    // })
-
-    // const onSubmit = async (data: AuthFormData) => {
-    //     console.log(data);
-    // };
-
-    const handleGoogleLogin = useGoogleLoginHandler()
-
-    
     return (
-        <div className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+        <div className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 min-h-screen">
             <Header />
-            <div className="min-h-screen flex items-center justify-center px-4 ">
+            <div className="flex items-center justify-center px-4 min-h-screen">
                 <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-md">
-                    <h2 className="text-2xl font-bold mb-6 text-center text-black">
-                        {/* {isSignup ? "Create an account" : "Welcome back"} */}
-                    </h2>
-                    {/* <form
-                        className="space-y-4"
-                        onSubmit={handleSubmit(onSubmit)}
-                    >
-                        <div>
-                            <input
-                                {...register("email")}
-                                type="email"
-                                placeholder="Email"
-                                className="w-full px-4 py-3 rounded-md border text-black border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
-                            />
-                            {errors.email && (
-                                <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
-                            )}
+                    {showCookieWarning && (
+                        <div className="mb-4 p-3 rounded-md bg-yellow-100 text-yellow-800 text-sm text-center font-medium">
+                            ⚠️ Login might not work if third-party cookies are blocked. 
+                            because my frontend is on diffrent domain and server is on diffrent domain so cookies can't be set unless enable third party cookies.
+                            <br />
+                            Please enable them in your browser settings.
+                            <div className="mt-3">
+                                <button
+                                    onClick={openHelpPage}
+                                    className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-1.5 px-3 rounded"
+                                >
+                                    How to Enable Third-Party Cookies
+                                </button>
+                            </div>
                         </div>
-                        <div>
-                            <input
-                                {...register("password")}
-                                type="password"
-                                placeholder="Password"
-                                className="w-full px-4 py-3 rounded-md border text-black border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
-                            />
-                            {errors.password && (
-                                <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
-                            )}
-                        </div>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full bg-black text-white py-3 rounded-md hover:bg-gray-800 transition cursor-pointer"
-                        >
-                            {isSignup ? "Sign Up" : "Login"}
-                        </button>
-                    </form> */}
-{/* 
-                    <p className="text-center text-sm text-gray-600 mt-4">
-                        {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
-                        <button
-                            onClick={() => setIsSignup(!isSignup)}
-                            className="text-black font-semibold hover:underline"
-                        >
-                            {isSignup ? "Login" : "Sign Up"}
-                        </button>
-                    </p> */}
-
-                    {/* <div className="my-6 border-t border-gray-300 text-center relative">
-                        <span className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white px-2 text-gray-500 text-sm">
-                            OR
-                        </span>
-                    </div> */}
+                    )}
 
                     <div className="flex justify-center">
-
                         <GoogleLogin
                             onSuccess={(res) => handleGoogleLogin(res.credential)}
                             onError={() => console.log('Login Failed')}
                         />
-                        {/* <FaGoogle size={25} color="black" className="mr-10 cursor-pointer" /> */}
-                        {/* <FaGithub size={25} color="black" className="mr-2 cursor-pointer" /> */}
                     </div>
                 </div>
             </div>

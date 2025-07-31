@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useSearchParams } from "react-router";
-import type { FileItem } from "types/types";
 import Header from "~/components/header";
 import {
   getUploadUrl,
@@ -9,7 +8,6 @@ import {
   useUploadS3Mutation,
   useValidateTokenQuery,
 } from "~/service/api";
-import { useUploadProgressStore } from "~/zustand/progress-store";
 import { useAuth } from "~/zustand/store";
 import Spinner from "~/components/spinner";
 import { SelectedFilesList } from "~/components/selected-file";
@@ -136,7 +134,8 @@ function UploadPage() {
 
           updateStatus(file.name, "done");
         } catch (error) {
-          setError(file.name, error?.message ?? "error while upload this file");
+          const message = error instanceof Error ? error.message : String(error);
+          setError(file.name, message ?? "error while upload this file");
         }
 
       }
