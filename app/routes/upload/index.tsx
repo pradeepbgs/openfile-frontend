@@ -14,6 +14,7 @@ import { useAuth } from "~/zustand/store";
 import Spinner from "~/components/spinner";
 import { SelectedFilesList } from "~/components/selected-file";
 import { useUploadStatusStore } from "~/zustand/upload-status-store";
+import { CircleX } from "lucide-react";
 
 const MAX_FREE_USER_UPLOAD_MB = import.meta.env.VIET_MAX_FREE_USER_UPLOAD_MB ?? 200 as number;
 
@@ -39,6 +40,7 @@ function UploadPage() {
   const {
     handleSubmit,
     formState: { errors },
+    reset
   } = useForm();
 
   const files = selectedFiles
@@ -49,11 +51,11 @@ function UploadPage() {
     error: tokenValidationError,
   } = useValidateTokenQuery(token || "");
 
-  const { mutateAsync: uploadFilesMutation, isPending: isUploading, isSuccess: isUploadSuccess } =
-    useUploadS3Mutation();
+  const { mutateAsync: uploadFilesMutation, isPending: isUploading } = useUploadS3Mutation();
 
   const { mutateAsync: UpdateDbS3 } = useUpdateS3UploadDB();
-  const { addFile, updateStatus } = useUploadStatusStore.getState();
+  const { addFile, updateStatus, setError } = useUploadStatusStore.getState();
+  const fileStatusList = useUploadStatusStore((state) => state.uploads);
 
   useEffect(() => {
     if (!files || files.length === 0) {
@@ -62,14 +64,19 @@ function UploadPage() {
     }
 
     let size = 0;
+    const existingStatus = useUploadStatusStore.getState().uploads;
 
     selectedFiles.forEach((file) => {
       size += file.size
-      const id = file.name;
-      addFile({ id, name: file.name, progress: 0, status: "pending" });
-    });
-    setTotalSize(size);
 
+      const existingFile = existingStatus.find((f) => f.name === file.name)
+      if (!existingFile) {
+        addFile({ id: file.name, name: file.name, progress: 0, status: "pending" });
+      }
+
+    });
+
+    setTotalSize(size);
 
   }, [selectedFiles]);
 
@@ -96,100 +103,54 @@ function UploadPage() {
       return;
     }
 
-    // create a worker
-    // const worker = new Worker(
-    //   new URL("../../utils/encryptWorker.ts", import.meta.url),
-    //   { type: "module" }
-    // );
+    const worker = new Worker(
+      new URL("../../utils/encryptWorker.ts", import.meta.url),
+      { type: "module" }
+    );
 
-    // const encryptFileWithWorker = (file: File, secretKey: string, iv: string): Promise<Blob> => {
-    //   return new Promise((resolve, reject) => {
-    //     worker.postMessage({ file, secretKey, iv });
+    const encryptFileWithWorker = (file: File, secretKey: string, iv: string): Promise<Blob> => {
+      return new Promise((resolve, reject) => {
+        worker.postMessage({ file, secretKey, iv });
 
-    //     worker.onerror = (err) => {
-    //       reject("Worker error: " + err.message);
-    //     };
-
-    //     worker.onmessage = (event) => {
-    //       if (event.data.error) {
-    //         reject(event.data.error);
-    //       } else {
-    //         resolve(event.data);
-    //       }
-    //     };
-    //   })
-    // }
+        worker.onerror = (err) => reject("Worker error: " + err.message);
+        worker.onmessage = (event) => {
+          event.data.error ? reject(event.data.error) : resolve(event.data);
+        };
+      });
+    };
 
     try {
-      // for (const file of files) {
-      //   const mimeType = file.type || 'application/octet-stream';
-      //   const { url, key: s3Key } = await getUploadUrl(mimeType, token);
 
-      //   const encryptedBlob = await encryptFileWithWorker(file, key, iv);
+      for (const file of files) {
+        const status = fileStatusList.find((f) => f.name === file.name);
+        if (status?.status === "done") continue;
 
-      //   const encryptedFile = new File([encryptedBlob], file.name, {
-      //     type: file.type,
-      //   });
+        try {
+          const mimeType = file.type || 'application/octet-stream';
+          const { url, key: s3Key } = await getUploadUrl(mimeType, token);
+          const encryptedBlob = await encryptFileWithWorker(file, key, iv);
+          const encryptedFile = new File([encryptedBlob], file.name, { type: file.type });
 
-      //   await uploadFilesMutation({ encryptFile: encryptedBlob, type: mimeType, url, name: file.name });
+          await uploadFilesMutation({ encryptFile: encryptedBlob, type: mimeType, url, name: file.name });
+          await UpdateDbS3({ s3Key, size: encryptedFile.size, token, filename: file.name });
 
-      //   await UpdateDbS3({ s3Key, size: encryptedFile.size, token, filename: file.name });
-      //   updateStatus(file.name, "done");
-      // }
-
-      const uploadArray = files.map(async (file) => {
-
-        const worker = new Worker(
-          new URL("../../utils/encryptWorker.ts", import.meta.url),
-          { type: "module" }
-        );
-
-        const encryptFileWithWorker = (file: File, secretKey: string, iv: string): Promise<Blob> => {
-          return new Promise((resolve, reject) => {
-            worker.postMessage({ file, secretKey, iv });
-
-            worker.onerror = (err) => {
-              reject("Worker error: " + err.message);
-            };
-
-            worker.onmessage = (event) => {
-              if (event.data.error) {
-                reject(event.data.error);
-              } else {
-                resolve(event.data);
-              }
-            };
-          })
+          updateStatus(file.name, "done");
+        } catch (error) {
+          setError(file.name, error?.message ?? "error while upload this file");
         }
 
-        const mimeType = file.type || 'application/octet-stream';
-        const { url, key: s3Key } = await getUploadUrl(mimeType, token);
-
-        const encryptedBlob = await encryptFileWithWorker(file, key, iv);
-
-        const encryptedFile = new File([encryptedBlob], file.name, {
-          type: file.type,
-        });
-
-        await uploadFilesMutation({ encryptFile: encryptedBlob, type: mimeType, url, name: file.name });
-
-        await UpdateDbS3({ s3Key, size: encryptedFile.size, token, filename: file.name });
-        updateStatus(file.name, "done");
-        worker.terminate()
-      })
-
-      await Promise.all(uploadArray)
-
+      }
     } catch (error) {
       console.error("Upload process failed:", error);
       const message = error instanceof Error ? error.message : String(error);
       setErrorMessage(`Upload failed: ${message}`);
     } finally {
+      worker.terminate();
       setIsProcessing(false);
-      // worker.terminate();
-      useUploadProgressStore.getState().resetProgress();
+
     }
   }
+
 
 
 
@@ -283,9 +244,18 @@ function UploadPage() {
           </div>
         </form>
 
-        <div className="w-full mt-5 md:mt-0  md:w-1/2">
-          <SelectedFilesList files={files} />
-        </div>
+        {files.length > 0 && (
+          <div className="bg-white/5 border border-white/10 p-4 rounded-xl w-full max-h-[30rem] overflow-auto space-y-3 mt-5 md:mt-0 md:w-1/2">
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-white text-lg font-medium">Selected Files</h2>
+              <CircleX
+                onClick={() => { setSelectedFiles([]); reset() }}
+              />
+            </div>
+            <SelectedFilesList files={files} />
+          </div>
+        )}
+
 
       </div>
 
