@@ -113,46 +113,50 @@ function App() {
       {/* How It Works Section */}
       <section id="how-it-works" className="px-6 py-20">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">How It Works</h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Share files securely in three simple steps
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">How It Works</h2>
+            <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
+              Let others send files to you — securely and anonymously, in just three simple steps.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-12">
+            {/* Step 1 */}
             <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <Upload className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">1. Upload Your File</h3>
-              <p className="text-gray-300 leading-relaxed">
-                Drag and drop or select your file. It's encrypted instantly on your device.
+              <h3 className="text-xl font-semibold text-white mb-3">1. Create a Unique Link</h3>
+              <p className="text-gray-400 leading-relaxed max-w-xs mx-auto">
+                Generate a private upload link for others to send you files.
               </p>
             </div>
 
+            {/* Step 2 */}
             <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <ArrowRight className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">2. Share the Link</h3>
-              <p className="text-gray-300 leading-relaxed">
-                Get a secure link to share with your recipient. No personal details required.
+              <h3 className="text-xl font-semibold text-white mb-3">2. Share the Link</h3>
+              <p className="text-gray-400 leading-relaxed max-w-xs mx-auto">
+                Send the link to anyone you want to receive files from — friends, clients, anyone.
               </p>
             </div>
 
+            {/* Step 3 */}
             <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <Download className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">3. Secure Download</h3>
-              <p className="text-gray-300 leading-relaxed">
-                Recipients download and decrypt files securely. Files expire automatically.
+              <h3 className="text-xl font-semibold text-white mb-3">3. They Upload the Files</h3>
+              <p className="text-gray-400 leading-relaxed max-w-xs mx-auto">
+                The recipient uploads files securely through the link. You get them instantly.
               </p>
             </div>
           </div>
         </div>
       </section>
+
 
       <PlansPage />
 
