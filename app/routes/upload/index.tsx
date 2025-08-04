@@ -119,13 +119,28 @@ function UploadPage() {
 
     try {
 
-      for (const file of files) {
+      files.map(async (file) => {
+        const worker = new Worker(
+          new URL("../../utils/encryptWorker.ts", import.meta.url),
+          { type: "module" }
+        );
+
+        const encryptFileWithWorker = (file: File, secretKey: string, iv: string): Promise<Blob> => {
+          return new Promise((resolve, reject) => {
+            worker.postMessage({ file, secretKey, iv });
+
+            worker.onerror = (err) => reject("Worker error: " + err.message);
+            worker.onmessage = (event) => {
+              event.data.error ? reject(event.data.error) : resolve(event.data);
+            };
+          });
+        };
         const status = fileStatusList.find((f) => f.name === file.name);
-        if (status?.status === "done") continue;
+        if (status?.status === "done") return;
 
         try {
           const mimeType = file.type || 'application/octet-stream';
-          const { url, key: s3Key } = await getUploadUrl(mimeType, token);
+          const { url, key: s3Key } = await getUploadUrl(mimeType, token,file.size);
           const encryptedBlob = await encryptFileWithWorker(file, key, iv);
           const encryptedFile = new File([encryptedBlob], file.name, { type: file.type });
 
@@ -137,8 +152,7 @@ function UploadPage() {
           const message = error instanceof Error ? error.message : String(error);
           setError(file.name, message ?? "error while upload this file");
         }
-
-      }
+      })
     } catch (error) {
       console.error("Upload process failed:", error);
       const message = error instanceof Error ? error.message : String(error);
