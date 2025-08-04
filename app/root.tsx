@@ -20,6 +20,7 @@ import { authCheck } from "./service/api";
 import "@radix-ui/themes/styles.css";
 import { Theme } from "@radix-ui/themes";
 import * as sonner from "sonner";
+import { Analytics } from '@vercel/analytics/react';
 
 const Toaster = (sonner as any).Toaster || sonner.Toaster;
 
@@ -49,6 +50,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body>
         {children}
         <Toaster />
+        <Analytics />
         <ScrollRestoration />
         <Scripts />
       </body>
