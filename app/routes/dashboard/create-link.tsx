@@ -36,6 +36,7 @@ export default function CreateLinkPage() {
   });
 
   const [shouldDownloadKey, setShouldDownloadKey] = useState<boolean>(false);
+  const [shouldExpireLinkAfterFirstUpload, setShouldExpireLinkAfterFirstUpload] = useState<boolean>(false)
 
   const navigate = useNavigate();
 
@@ -72,7 +73,8 @@ export default function CreateLinkPage() {
     const { iv, key: secretKey } = await generateKeyAndIVWithWebCrypto()
     const payload = {
       ...data,
-      expiresAt
+      expiresAt,
+      expireAfterFirstUpload: shouldExpireLinkAfterFirstUpload
     };
 
     try {
@@ -93,12 +95,6 @@ export default function CreateLinkPage() {
       console.error("Failed to create link");
     }
   };
-
-
-  const handleCheckboxChange = (e: any) => {
-    setShouldDownloadKey(e.target.checked);
-  };
-
 
   return (
     <div className="min-h-screen  text-white flex flex-col  items-center px-4 py-6">
@@ -171,21 +167,25 @@ export default function CreateLinkPage() {
 
           {/* Download checkbox + Generate key */}
           <div className="flex flex-wrap items-center gap-4">
+
             <div className="flex items-center">
               <input
                 type="checkbox"
                 checked={shouldDownloadKey}
-                onChange={handleCheckboxChange}
+                onChange={(e) => setShouldDownloadKey(e.target.checked)}
               />
               <label className="ml-2 text-sm text-gray-300">Download key & IV?</label>
             </div>
-            {/* <button
-              type="button"
-              onClick={generateKeyAndIV}
-              className="text-xs text-white px-3 py-2 rounded-sm bg-indigo-600 hover:bg-indigo-700 transition duration-300"
-            >
-              Generate Secure Key
-            </button> */}
+
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={shouldExpireLinkAfterFirstUpload}
+                onChange={(e) => setShouldExpireLinkAfterFirstUpload(e.target.checked)}
+              />
+              <label className="ml-2 text-sm text-gray-300">Expire after first upload?</label>
+            </div>
+
           </div>
 
           {/* Submit */}

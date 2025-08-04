@@ -125,7 +125,7 @@ function UploadPage() {
 
         try {
           const mimeType = file.type || 'application/octet-stream';
-          const { url, key: s3Key } = await getUploadUrl(mimeType, token);
+          const { url, key: s3Key } = await getUploadUrl(mimeType, token, file.size);
           const encryptedBlob = await encryptFileWithWorker(file, key, iv);
           const encryptedFile = new File([encryptedBlob], file.name, { type: file.type });
 

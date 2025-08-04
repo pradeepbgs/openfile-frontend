@@ -227,14 +227,14 @@ export function useUserFilesQuery(linkId: number, token: string, page: number, l
 }
 
 
-export const getUploadUrl = async (mimeType: string, token: string | null) => {
+export const getUploadUrl = async (mimeType: string, token: string | null, fileSize:number) => {
     try {
         const res = await fetch(`${backendUrl}/api/v1/file/upload-url?token=${token}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ mimeType }),
+            body: JSON.stringify({ mimeType,fileSize }),
         });
 
         const data = await res.json();
