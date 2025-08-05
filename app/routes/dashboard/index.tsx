@@ -3,6 +3,7 @@ import { useAuth } from "~/zustand/store";
 import Sidebar from "~/components/sidebar";
 import { useEffect } from "react";
 import Footer from "~/components/footer";
+import SupportPage from "~/components/support";
 
 
 
@@ -19,6 +20,7 @@ const DashboardLayout = () => {
       <div className="relative flex min-h-screen ">
         <Sidebar />
         <main className="flex-1  p-4 md:p-6 min-h-screen overflow-auto">
+          <SupportPage />
           <Outlet />
         </main>
       </div>
