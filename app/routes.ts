@@ -14,5 +14,6 @@ export default [
     ]),
     route('plan','routes/dashboard/plan.tsx'),
     route('upload', 'routes/upload/index.tsx'),
-    route('/*','components/not-found.tsx')
+    route('/*','components/not-found.tsx'),
+    route('/support', 'components/SupportPage.tsx'),
 ] as RouteConfig;
