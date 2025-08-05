@@ -11,7 +11,7 @@ export default function SupportPage() {
 
         {/* Buy Me a Coffee */}
         <a
-          href="https://www.buymeacoffee.com/yourusername"
+          href="https://buymeacoffee.com/pradeepsahu"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block bg-yellow-500 text-black px-6 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition"
@@ -24,28 +24,12 @@ export default function SupportPage() {
         {/* Donation Options */}
         <div className="flex flex-wrap gap-4 justify-center">
           <a
-            href="https://dodo.app/pay/yourpage?amount=5"
+            href="https://checkout.dodopayments.com/buy/pdt_r0o4sFbrxAyIfY58BLPaK?quantity=1&redirect_url=https://openfile-one.vercel.app%2F"
             target="_blank"
             rel="noopener noreferrer"
             className="px-5 py-2 rounded bg-gray-800 hover:bg-gray-700 transition border border-yellow-500 text-yellow-400 font-semibold"
           >
-            $5
-          </a>
-          <a
-            href="https://dodo.app/pay/yourpage?amount=10"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-5 py-2 rounded bg-gray-800 hover:bg-gray-700 transition border border-yellow-500 text-yellow-400 font-semibold"
-          >
-            $10
-          </a>
-          <a
-            href="https://dodo.app/pay/yourpage?amount=50"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-5 py-2 rounded bg-gray-800 hover:bg-gray-700 transition border border-yellow-500 text-yellow-400 font-semibold"
-          >
-            $50
+            Click to Donate us custom amount on dodo payments
           </a>
         </div>
 
