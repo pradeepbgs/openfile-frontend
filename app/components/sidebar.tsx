@@ -8,7 +8,7 @@ import OpenfileLogo from './openfile-logo';
 const Tabs = [
   { name: "Home", path: "/dashboard", icon: <FiHome /> },
   { name: "Profile", path: "/dashboard/profile", icon: <FiUser /> },
-  { name: "Settings", path: "/dashboard/settings", icon: <FiSettings /> },
+  // { name: "Settings", path: "/dashboard/settings", icon: <FiSettings /> },
 ];
 
 export default function Sidebar() {

@@ -157,9 +157,9 @@ export default function CreateLinkPage() {
                   }
                   className="border border-white/10 bg-white/10 text-white px-2 py-2 text-sm rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="minutes">Minutes</option>
-                  <option value="hours">Hours</option>
-                  <option value="days">Days</option>
+                  <option value="minutes" className="text-black">Minutes</option>
+                  <option value="hours" className="text-black">Hours</option>
+                  <option value="days" className="text-black">Days</option>
                 </select>
               </div>
             </div>

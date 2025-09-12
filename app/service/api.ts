@@ -227,14 +227,14 @@ export function useUserFilesQuery(linkId: number, token: string, page: number, l
 }
 
 
-export const getUploadUrl = async (mimeType: string, token: string | null, fileSize:number) => {
+export const getUploadUrl = async (mimeType: string, token: string | null, fileSize: number) => {
     try {
         const res = await fetch(`${backendUrl}/api/v1/file/upload-url?token=${token}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ mimeType,fileSize }),
+            body: JSON.stringify({ mimeType, fileSize }),
         });
 
         const data = await res.json();
@@ -393,3 +393,20 @@ export function useLinkCount() {
         retry: false,
     })
 }
+
+export const checkoutPage = async (payload: any) => {
+    try {
+        const res = await axios.post(
+            `${backendUrl}/api/v1/payments/dodo-checkout`,
+            payload
+        );
+
+        if (!res.data?.checkout_url) {
+            throw new Error("No checkout URL returned from server.");
+        }
+
+        return res.data.checkout_url;
+    } catch (error: any) {
+        throw new Error(error?.response?.data?.message || "Failed to initiate checkout.");
+    }
+};

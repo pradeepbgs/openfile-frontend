@@ -19,6 +19,7 @@ function Header() {
           <a href="#features" className="text-gray-300 hover:text-white transition-colors">
             Features
           </a>
+          <Link to={'/plan'} className='text-gray-300'>Pricing</Link>
           {isLoggedIn ?
             <Link to={'/dashboard'} className="bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white px-6 py-2 rounded-lg transition-all duration-300">
               Dashboard

@@ -14,7 +14,7 @@ import { SelectedFilesList } from "~/components/selected-file";
 import { useUploadStatusStore } from "~/zustand/upload-status-store";
 import { CircleX } from "lucide-react";
 
-const MAX_FREE_USER_UPLOAD_MB = import.meta.env.VIET_MAX_FREE_USER_UPLOAD_MB ?? 200 as number;
+const MAX_FREE_USER_UPLOAD_MB = import.meta.env.VIET_MAX_FREE_USER_UPLOAD_MB ?? 20 as number;
 
 
 
@@ -33,7 +33,7 @@ function UploadPage() {
   const token = searchParams.get("token");
 
   const user = useAuth.getState().user;
-  const isFreeUser = user?.subscription.planName === "free";
+  const isFreeUser = user?.subscription?.planName === "free";
 
   const {
     handleSubmit,
@@ -89,6 +89,7 @@ function UploadPage() {
 
     if (!key || !iv) {
       setErrorMessage("Missing encryption key or IV.");
+      setIsProcessing(false);
       return;
     }
 
@@ -96,8 +97,9 @@ function UploadPage() {
 
     if (totalSize > maxTotalSize) {
       setErrorMessage(
-        `Free users can only upload up to 200MB. Your total is ${(totalSize / 1024 / 1024).toFixed(2)}MB.`
+        `can only upload up to 200MB. Your total is ${(totalSize / 1024 / 1024).toFixed(2)}MB.`
       );
+      setIsProcessing(false)
       return;
     }
 
@@ -146,7 +148,6 @@ function UploadPage() {
     } finally {
       worker.terminate();
       setIsProcessing(false);
-
     }
   }
 
