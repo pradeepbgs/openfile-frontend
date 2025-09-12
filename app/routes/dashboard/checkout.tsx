@@ -1,10 +1,9 @@
 import { useState } from "react";
-import axios from "axios";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { checkoutPage } from "~/service/api";
 
 export default function CheckoutPage() {
-
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -15,13 +14,14 @@ export default function CheckoutPage() {
     country: "",
     street: "",
     zipcode: "",
+    currency: "USD",
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
 
@@ -38,24 +38,20 @@ export default function CheckoutPage() {
         street: formData.street,
         zipcode: formData.zipcode,
       },
-      product_id: "pdt_ROv1dKJ6PC4gpcRSlAcCq",
+      product_id: import.meta.env.VITE_DODO_PRODUCT_ID,
       line_items: [
         {
           name: "Pro Plan",
-          amount: 1000,
-          currency: "INR",
+          amount: 500,
+          currency: formData.currency, 
           quantity: 1,
         },
       ],
     };
 
     try {
-      const res = await axios.post("http://localhost:8000/api/v1/payments/dodo-checkout", payload);
-      if (res.data?.checkout_url) {
-        window.location.href = res.data.checkout_url;
-      } else {
-        throw new Error("No checkout URL returned from server.");
-      }
+      const checkoutUrl = await checkoutPage(payload);
+      window.location.href = checkoutUrl;
     } catch (error) {
       console.error(error);
       toast.error(error?.response?.data?.message || "Failed to initiate checkout.");
@@ -174,7 +170,7 @@ export default function CheckoutPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Country ( in short like India - IN )
+                Country ( e.g., US or IN )
               </label>
               <input
                 type="text"
@@ -200,6 +196,28 @@ export default function CheckoutPage() {
                 required
                 className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none"
               />
+            </div>
+
+            {/* New currency selection field */}
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Currency
+              </label>
+              <select
+                name="currency"
+                value={formData.currency}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+                <option value="USD">USD - US Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="GBP">GBP - British Pound</option>
+                <option value="JPY">JPY - Japanese Yen</option>
+                <option value="CAD">CAD - Canadian Dollar</option>
+                <option value="AUD">AUD - Australian Dollar</option>
+                <option value="INR">INR - Indian Rupee</option>
+              </select>
             </div>
           </div>
 
