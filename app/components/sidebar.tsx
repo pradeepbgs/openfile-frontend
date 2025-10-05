@@ -1,13 +1,13 @@
-import React, { useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router'
-import { FiHome, FiUser, FiSettings, FiChevronDown, FiMenu } from 'react-icons/fi'
+import  { useState } from 'react'
+import { Link, NavLink, } from 'react-router'
+import { FiHome, FiUser,  FiChevronDown, FiMenu } from 'react-icons/fi'
 import { useAuth } from '~/zustand/store';
 import SidebarDropdown from './sidebar-dropdown';
 import OpenfileLogo from './openfile-logo';
 
 const Tabs = [
   { name: "Home", path: "/dashboard", icon: <FiHome /> },
-  { name: "Profile", path: "/dashboard/profile", icon: <FiUser /> },
+  { name: "Links", path: "/dashboard/links", icon: <FiUser /> },
   // { name: "Settings", path: "/dashboard/settings", icon: <FiSettings /> },
 ];
 

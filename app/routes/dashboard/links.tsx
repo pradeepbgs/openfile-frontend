@@ -57,7 +57,7 @@ function Profile() {
   }
 
 
-  const handleSearch = async (e) => {
+  const handleSearch = async (e:any) => {
     e.preventDefault()
     refetch()
   }

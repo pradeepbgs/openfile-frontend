@@ -6,12 +6,14 @@ export default [
     route('/contact', 'routes/contact/index.tsx'),
     route('/auth', 'routes/auth/auth.tsx'),
     route('/privacy-policy', 'components/privacy-policy.tsx'),
+    
     route('dashboard', 'routes/dashboard/index.tsx',[
         index('routes/dashboard/home.tsx'),
-        route('profile', 'routes/dashboard/profile.tsx'),
+        route('links', 'routes/dashboard/links.tsx'),
         route('settings', 'routes/dashboard/settings.tsx'),
-        route('link/:id', 'routes/dashboard/link.tsx'),
+        route('link/:id', 'components/link.tsx'),
     ]),
+    
     route('plan','routes/dashboard/plan.tsx'),
     route('plan/checkout', 'routes/dashboard/checkout.tsx'),
     route('upload', 'routes/upload/index.tsx'),

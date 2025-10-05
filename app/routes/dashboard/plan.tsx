@@ -45,7 +45,7 @@ const plans = [
 ];
 
 export default function PlansPage() {
-    const user = useAuth.getState().user;
+    const user: any = useAuth.getState().user;
     const currentPlan = user?.plan;
     const navigate = useNavigate();
     const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
