@@ -410,3 +410,26 @@ export const checkoutPage = async (payload: any) => {
         throw new Error(error?.response?.data?.message || "Failed to initiate checkout.");
     }
 };
+
+export const checkout = async (productId: string) => {
+    try {
+        const res = await axios.get(
+            `${backendUrl}/api/v1/payments/dodo-checkout?productId=${productId}`
+        );
+
+        if (!res.data?.checkout_url) {
+            throw new Error("No checkout URL returned from server.");
+        }
+
+        return res.data.checkout_url;
+    }
+    catch (error: any) {
+        throw new Error(error?.response?.data?.message || "Failed to initiate checkout.");
+    }
+}
+
+// export function useCheckout() {
+//     return useMutation({
+//         mutationFn: checkout,
+//     })
+// }

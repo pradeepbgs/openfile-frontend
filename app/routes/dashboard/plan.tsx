@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Router, useNavigate } from 'react-router';
-import axios from 'axios';
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { useAuth } from '~/zustand/store';
-import { toast } from 'sonner';
-import { Link } from 'react-router';
+
+import { checkout } from '~/service/api';
+import Spinner from '~/components/spinner';
 
 const plans = [
     {
@@ -48,64 +48,21 @@ export default function PlansPage() {
     const user: any = useAuth.getState().user;
     const currentPlan = user?.plan;
     const navigate = useNavigate();
-    const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+
 
     const handleSelectPlan = async (planKey: string) => {
-        try {
-            setLoadingPlan(planKey);
-
-            // Map your planKey to price and plan details
-            const planDetails: Record<string, { name: string; amount: number }> = {
-                free: { name: "Free Plan", amount: 0 },
-                pro: { name: "Pro Plan", amount: 499 },
-                enterprise: { name: "Enterprise Plan", amount: 499 }
-            };
-
-            const selectedPlan = planDetails[planKey];
-            if (!selectedPlan) {
-                toast.error("Invalid plan selected");
-                return;
-            }
-
-            const res = await axios.post("http://localhost:8000/api/checkout", {
-                customer: {
-                    email: "test@example.com",
-                    name: "Anonymous User",
-                    phone: "+911234567890"
-                },
-                product_id: 'pdt_ROv1dKJ6PC4gpcRSlAcCq',
-                billing: {
-                    city: "New Delhi",
-                    state: "Delhi",
-                    country: "IN",
-                    street: "Lado Sarai, near Saket",
-                    zipcode: "110030"
-                },
-                line_items: [
-                    {
-                        name: selectedPlan.name,
-                        amount: selectedPlan.amount,
-                        currency: "INR",
-                        quantity: 1
-                    }
-                ],
-                metadata: {
-                    userId: user?.id.toString(),
-                    plan: planKey
-                }
-            });
-
-            if (res.data?.checkout_url) {
-                window.location.href = res.data.checkout_url;
-            } else {
-                throw new Error("No checkout URL returned from server.");
-            }
-        } catch (error: any) {
-            console.error(error);
-            toast.error(error.response?.data?.message || "Failed to initiate checkout.");
-        } finally {
-            setLoadingPlan(null);
+        if (planKey === 'free') {
+            navigate('/plan/checkout')
+            return
         }
+        setLoading(true);
+
+        const url = await checkout(import.meta.env.VITE_DODO_PRODUCT_ID)
+        if (url) {
+            window.location.href = url;
+        }
+        setLoading(false);
     };
 
 
@@ -144,12 +101,20 @@ export default function PlansPage() {
                             <button
                                 onClick={() => {
                                     if (!user) return navigate('/auth');
+                                    return handleSelectPlan(plan.planKey);
+
                                     return navigate('/plan/checkout')
                                 }}
                                 className="mt-6 w-full bg-purple-600 hover:bg-purple-700 transition text-white py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
                             >
 
-                                Checkout
+                                {
+                                    loading ? (
+                                        <Spinner />
+                                    ) : (
+                                        "CheckOut"
+                                    )
+                                }
                             </button>
                         )}
                     </div>
