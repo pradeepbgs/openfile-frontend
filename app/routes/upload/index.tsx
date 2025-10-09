@@ -13,6 +13,7 @@ import Spinner from "~/components/spinner";
 import { SelectedFilesList } from "~/components/selected-file";
 import { useUploadStatusStore } from "~/zustand/upload-status-store";
 import { CircleX } from "lucide-react";
+import { GLOBAL_BG } from "constant";
 
 const MAX_FREE_USER_UPLOAD_MB = import.meta.env.VIET_MAX_FREE_USER_UPLOAD_MB ?? 20 as number;
 
@@ -178,7 +179,7 @@ function UploadPage() {
   }
 
   return (
-    <div className="text-white min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+    <div className={`text-white min-h-screen ${GLOBAL_BG}`}>
       <Header />
 
       <div className={`mx-auto py-12 px-4 ${totalSize > 0 ? 'md:flex md:justify-center md:items-center max-w-6xl' : 'max-w-2xl'} md:gap-6 md:items-start`}>

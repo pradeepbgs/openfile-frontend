@@ -16,6 +16,9 @@ function Footer() {
                         <p className="text-gray-400">
                             Secure, private, and reliable file sharing for everyone.
                         </p>
+                        <p className='text-gray-300'>
+                            Mail us @<a href="mailto:exvillagerbgs@gmail.com" className="text-blue-500 hover:text-blue-400 transition-colors">exvillagerbgs@gmail.com</a>
+                        </p>
                     </div>
 
                     <div>
