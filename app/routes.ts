@@ -11,7 +11,7 @@ export default [
         index('routes/dashboard/home.tsx'),
         route('links', 'routes/dashboard/links.tsx'),
         route('settings', 'routes/dashboard/settings.tsx'),
-        route('link/:id', 'components/link.tsx'),
+        route('link/:id', 'routes/dashboard/link-details.tsx'),
     ]),
     
     route('plan','routes/dashboard/plan.tsx'),

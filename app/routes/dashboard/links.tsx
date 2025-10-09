@@ -15,19 +15,19 @@ function Profile() {
   const { data: LinkCounts } = useLinkCount()
 
 
-  useEffect(() =>{
-    const handler = setTimeout(() =>{
+  useEffect(() => {
+    const handler = setTimeout(() => {
       setDebounceSearch(searchText);
-    },300)
+    }, 300)
 
     return () => {
       clearTimeout(handler);
     }
-  },[searchText])
+  }, [searchText])
 
   useEffect(() => {
     refetch();
-  }, [page,debouncedSearch]);
+  }, [page, debouncedSearch]);
 
   if (isLoading) return <div className="min-h-screen flex justify-center items-center"><Spinner size={28} /></div>;
 
@@ -57,7 +57,7 @@ function Profile() {
   }
 
 
-  const handleSearch = async (e:any) => {
+  const handleSearch = async (e: any) => {
     e.preventDefault()
     refetch()
   }
@@ -117,7 +117,7 @@ function Profile() {
         <button
           className="px-3 py-1 bg-gray-700 rounded disabled:opacity-50"
           onClick={loadNextPage}
-          disabled={page === totalPages}
+          disabled={LinkCounts === 0 ? true : page === totalPages}
         >
           Next
         </button>

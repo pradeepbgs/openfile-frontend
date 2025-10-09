@@ -4,11 +4,11 @@ import { Link, useNavigate } from 'react-router';
 import type { LinkItem } from 'types/types';
 import { formatDistanceToNow, isBefore } from 'date-fns';
 import AlertMenu from './alert-menu';
-import { IoMdRefresh } from "react-icons/io";
 import { useDeleteLink } from '~/service/api';
 import { getCryptoSecret } from '~/utils/crypto-store';
 import { FaLink } from "react-icons/fa6";
 import { toast } from "sonner"
+import { FiRefreshCcw } from "react-icons/fi";
 
 function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh: () => void }) {
   const [spinning, setSpinning] = useState<boolean>(false);
@@ -62,7 +62,8 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-white mb-6">Recent Links</h2>
+      <h2 className="text-2xl font-bold text-white mb-2">Recent Links</h2>
+      <p className='text-gray-300 text-sm p-1'>Click on the full link to see link's details</p>
       <div className="bg-white/5 border-white/5 rounded-lg shadow-md overflow-x-auto">
         <table className="min-w-full divide-y divide-neutral-700">
           <thead className="">
@@ -72,7 +73,7 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
                   onClick={handleRefreshLink}
                   className="cursor-pointer mr-3 relative  hover:text-indigo-400 text-white"
                 >
-                  <IoMdRefresh
+                  <FiRefreshCcw
                     size={20}
                     className={`transition-transform duration-500 ${spinning ? 'animate-spin' : ''}`}
                   />
@@ -114,7 +115,7 @@ function UserLinks({ links, handleRefresh }: { links: LinkItem[], handleRefresh:
 
                         <button
                           onClick={() => route(link.id, link.token, secret)}
-                          className="  hover:text-indigo-300 text-sm text-white truncate max-w-xs block"
+                          className="hover:text-indigo-300 text-sm text-white truncate max-w-xs block"
                           rel="noopener noreferrer"
                           title={fullLink}
                         >
