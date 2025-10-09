@@ -4,6 +4,7 @@ import { useAuth } from '~/zustand/store';
 
 import { checkout } from '~/service/api';
 import Spinner from '~/components/spinner';
+import { GLOBAL_BG } from 'constant';
 
 const plans = [
     {
@@ -68,7 +69,7 @@ export default function PlansPage() {
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white p-6 flex flex-col items-center">
+        <div className={`min-h-screen text-white p-6 flex flex-col items-center ${GLOBAL_BG}`}>
             <h1 className="text-3xl font-bold mb-8">Choose Your Plan</h1>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl">
                 {plans.map((plan) => (

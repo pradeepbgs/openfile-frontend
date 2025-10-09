@@ -2,6 +2,7 @@ import Header from "~/components/header";
 import { GoogleLogin } from '@react-oauth/google';
 import { useGoogleLoginHandler } from "~/service/api";
 import { useState, useEffect } from "react";
+import { GLOBAL_BG } from "constant";
 
 export default function AuthPage() {
     const handleGoogleLogin = useGoogleLoginHandler();
@@ -12,10 +13,10 @@ export default function AuthPage() {
     };
 
     return (
-        <div className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 min-h-screen">
+        <div className={`${GLOBAL_BG} min-h-screen`}>
             <Header />
             <div className="flex items-center justify-center px-4 min-h-screen">
-                <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-md">
+                <div className="max-w-md w-full bg-gray-800 p-8 rounded-xl shadow-md">
                     {showCookieWarning && (
                         <div className="mb-4 p-3 rounded-md bg-yellow-100 text-yellow-800 text-sm text-center font-medium">
                             ⚠️ Login might not work if third-party cookies are blocked. 

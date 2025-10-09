@@ -3,7 +3,7 @@ import { useAuth } from "~/zustand/store";
 import Sidebar from "~/components/sidebar";
 import { useEffect } from "react";
 import Footer from "~/components/footer";
-import SupportPage from "~/components/support";
+import { GLOBAL_BG } from "constant";
 
 
 
@@ -16,7 +16,7 @@ const DashboardLayout = () => {
   }, [])
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+    <div className={`${GLOBAL_BG}`}>
       <div className="relative flex min-h-screen ">
         <Sidebar />
         <main className="flex-1  p-4 md:p-6 min-h-screen overflow-auto">
