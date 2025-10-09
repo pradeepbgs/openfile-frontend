@@ -10,25 +10,26 @@ import {
 } from "~/service/api";
 import { useAuth } from "~/zustand/store";
 import Spinner from "~/components/spinner";
-import { SelectedFilesList } from "~/components/selected-file";
 import { useUploadStatusStore } from "~/zustand/upload-status-store";
 import { CircleX } from "lucide-react";
 import { GLOBAL_BG } from "constant";
+import { SelectedFilesList } from "~/components/selected-file";
+import { encryptFileWithWorker, getHashParams } from "./upload.util";
 
-const MAX_FREE_USER_UPLOAD_MB = import.meta.env.VIET_MAX_FREE_USER_UPLOAD_MB ?? 20 as number;
+const MAX_FREE_USER_UPLOAD_MB = import.meta.env.VITE_MAX_FREE_USER_UPLOAD_MB ?? 200 as number;
 
+type UploadMode = "sequential" | "parallel";
 
 
 function UploadPage() {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
-  const hashParams = new URLSearchParams(window.location.hash.slice(1));
-  const key = hashParams.get("key") || ""
-  const iv = hashParams.get("iv") || ""
+  const { iv, key } = getHashParams(window.location.hash)
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [totalSize, setTotalSize] = useState<number>(0);
+  const [uploadMode, setUploadMode] = useState<UploadMode>("sequential");
 
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
@@ -79,11 +80,11 @@ function UploadPage() {
 
   }, [selectedFiles]);
 
-  const onSubmit = async (data: any) => {
+  const processUploads = async () => {
     setIsProcessing(true);
     setErrorMessage("");
 
-    if (!selectedFiles || selectedFiles.length === 0) {
+    if (!files || files.length === 0) {
       setErrorMessage("Please select at least one file.");
       return;
     }
@@ -104,61 +105,59 @@ function UploadPage() {
       return;
     }
 
-    const worker = new Worker(
-      new URL("../../utils/encryptWorker.ts", import.meta.url),
-      { type: "module" }
-    );
-
-    const encryptFileWithWorker = (file: File, secretKey: string, iv: string): Promise<Blob> => {
-      return new Promise((resolve, reject) => {
-        worker.postMessage({ file, secretKey, iv });
-
-        worker.onerror = (err) => reject("Worker error: " + err.message);
-        worker.onmessage = (event) => {
-          event.data.error ? reject(event.data.error) : resolve(event.data);
-        };
-      });
-    };
-
-    try {
-
-      for (const file of files) {
-        const status = fileStatusList.find((f) => f.name === file.name);
-        if (status?.status === "done") continue;
-
-        try {
-          const mimeType = file.type || 'application/octet-stream';
-          const { url, key: s3Key } = await getUploadUrl(mimeType, token, file.size);
-          const encryptedBlob = await encryptFileWithWorker(file, key, iv);
-          const encryptedFile = new File([encryptedBlob], file.name, { type: file.type });
-
-          await uploadFilesMutation({ encryptFile: encryptedBlob, type: mimeType, url, name: file.name });
-          await UpdateDbS3({ s3Key, size: encryptedFile.size, token, filename: file.name });
-
-          updateStatus(file.name, "done");
-        } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
-          setError(file.name, message ?? "error while upload this file");
-        }
-
-      }
-    } catch (error) {
-      console.error("Upload process failed:", error);
-      const message = error instanceof Error ? error.message : String(error);
-      setErrorMessage(`Upload failed: ${message}`);
-    } finally {
-      worker.terminate();
-      setIsProcessing(false);
+    if (uploadMode === "sequential") {
+      await handleSequentialUpload();
+    } else {
+      await handleParallelUpload();
     }
+
+    setIsProcessing(false);
   }
 
 
+  const uploadSingleFile = async (file: File) => {
+    const status = fileStatusList.find((f) => f.name === file.name);
+    if (status?.status === "done") return;
 
+    try {
+      const mimeType = file.type || 'application/octet-stream';
+      const { url, key: s3Key } = await getUploadUrl(mimeType, token, file.size);
+      const encryptedBlob = await encryptFileWithWorker(file, key, iv);
+      const encryptedFile = new File([encryptedBlob], file.name, { type: file.type });
+
+      await uploadFilesMutation({ encryptFile: encryptedBlob, type: mimeType, url, name: file.name })
+      await UpdateDbS3({ s3Key, size: encryptedFile.size, token, filename: file.name })
+
+      updateStatus(file.name, "done");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setError(file.name, message ?? "error while upload this file");
+      throw error;
+    }
+  };
+
+  const handleSequentialUpload = async () => {
+    for (const file of files) {
+      try {
+        await uploadSingleFile(file);
+      } catch (error) {
+        console.error(`Failed to upload ${file.name}:`, error);
+      }
+    }
+  };
+
+  const handleParallelUpload = async () => {
+    const uploadPromises = files.map(file => uploadSingleFile(file).catch(e => e));
+    await Promise.all(uploadPromises);
+  };
 
   if (!token)
     return (
-      <div className="text-center mt-20 text-red-500 font-semibold">
-        No token found. Please check your link again.
+      <div className={`h-screen w-full ${GLOBAL_BG}`}>
+        {/* No token found. Please check your link again. */}
+        <p className="text-center text-red-500 font-semibold py-20">
+          Invalid or missing link. Please check your URL and try again.
+        </p>
       </div>
     );
 
@@ -180,87 +179,78 @@ function UploadPage() {
 
   return (
     <div className={`text-white min-h-screen ${GLOBAL_BG}`}>
-      <Header />
-
-      <div className={`mx-auto py-12 px-4 ${totalSize > 0 ? 'md:flex md:justify-center md:items-center max-w-6xl' : 'max-w-2xl'} md:gap-6 md:items-start`}>
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full md:w-1/2">
-          <h1 className="text-2xl font-semibold text-center mb-6">Upload Files</h1>
-          <div className="bg-white/5 border border-white/10 p-6 rounded-xl shadow-xl space-y-6 text-white backdrop-blur-md">
-            {isFreeUser && (
-              <p className="text-sm text-gray-400">
-                Free users can upload up to {MAX_FREE_USER_UPLOAD_MB}MB in total.
-              </p>
+  <Header />
+  
+  <div className="max-w-2xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="w-full">
+      <div className="bg-white/5 border border-white/10 p-6 md:p-8 rounded-xl shadow-xl space-y-6 text-white backdrop-blur-md">
+        <div className="text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold">Upload Files</h1>
+          <p className="text-gray-400 text-sm sm:text-base mt-2">
+            Securely upload and share your files.
+          </p>
+        </div>
+  
+        <form onSubmit={handleSubmit(processUploads)} className="space-y-6">
+          <div>
+            <label htmlFor="file-upload" className="block text-sm font-medium text-gray-300 mb-2">Select Files</label>
+            <input
+              id="file-upload"
+              type="file"
+              multiple
+              onChange={(e) => setSelectedFiles(prev => [...prev, ...(e.target.files ? Array.from(e.target.files) : [])])}
+              className="w-full bg-white/10 text-white border border-white/10 px-3 py-2 text-sm rounded-md file:border-0 file:bg-gray-700 file:text-white hover:border-white/20"
+            />
+            {errors.files && (
+              <p className="text-sm text-red-400 mt-1">{(errors.files as any).message || "Please select at least one file."}</p>
             )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Select Files</label>
-              <input
-                type="file"
-                multiple
-                onChange={(e) => {
-                  const newFiles = Array.from(e.target.files || []);
-                  setSelectedFiles((prev) => [...prev, ...newFiles]);
-                }}
-
-                className="w-full bg-white/10 text-white border border-white/10 px-3 py-2 text-sm rounded-md file:border-0 file:bg-gray-700 file:text-white hover:border-white/20"
-              />
-              {errors.files && (
-                <p className="text-sm text-red-400 mt-1">
-                  {(errors.files as any).message || "Please select at least one file."}
-                </p>
-              )}
-            </div>
-
-            <p className="text-sm text-gray-400">
-              Total size: {(totalSize / 1024 / 1024).toFixed(2)} MB
-            </p>
-
-            {/* {!errorMessage && isUploadSuccess && (
-              <p className="text-sm text-green-400 text-center">All files uploaded successfully!</p>
-            )} */}
-
-            {errorMessage && (
-              <p className="text-sm text-red-400 text-center">{errorMessage}</p>
-            )}
-
-            <button
-              type="submit"
-              disabled={isUploading || !files?.length}
-              className={`relative w-full text-sm rounded-md overflow-hidden border border-white/10 transition duration-300 ${isUploading || !files?.length
-                ? "bg-white/10 cursor-not-allowed text-white/50"
-                : "bg-purple-600 hover:bg-purple-700 text-white"
-                }`}
-            >
-              {/* {isUploading && (
-                <div
-                  className="absolute top-0 left-0 h-full bg-green-600 transition-all duration-300 z-0"
-                  style={{ width: `${progress}%` }}
-                />
-              )} */}
-              <span className="relative z-10 block w-full text-center py-2">
-                {isProcessing ? <Spinner size={16} color="white" /> : "Upload"}
-              </span>
-
-            </button>
           </div>
+  
+          <div className="flex flex-col sm:flex-row justify-between items-center bg-white/5 p-3 rounded-md space-y-3 sm:space-y-0">
+            <span className="text-sm text-gray-300">Upload Mode</span>
+            <div className="flex items-center space-x-3">
+              <span className={`text-sm ${uploadMode === 'sequential' ? 'text-white' : 'text-gray-500'}`}>Sequential</span>
+              <button
+                type="button"
+                onClick={() => setUploadMode(prev => prev === 'sequential' ? 'parallel' : 'sequential')}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${uploadMode === 'parallel' ? 'bg-purple-600' : 'bg-gray-600'}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${uploadMode === 'parallel' ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+              <span className={`text-sm ${uploadMode === 'parallel' ? 'text-white' : 'text-gray-500'}`}>Parallel</span>
+            </div>
+          </div>
+  
+          {errorMessage && <p className="text-sm text-red-400 text-center">{errorMessage}</p>}
+  
+          <button
+            type="submit"
+            disabled={isUploading || !files?.length || isProcessing}
+            className={`w-full py-3 text-sm font-semibold rounded-md transition duration-300 flex justify-center items-center ${isUploading || !files?.length || isProcessing
+              ? "bg-white/10 cursor-not-allowed text-white/50"
+              : "bg-purple-600 hover:bg-purple-700 text-white"
+              }`}
+          >
+            {isProcessing ? <Spinner size={16} color="white" /> : "Upload"}
+          </button>
         </form>
-
-        {files.length > 0 && (
-          <div className="bg-white/5 border border-white/10 p-4 rounded-xl w-full max-h-[30rem] overflow-auto space-y-3 mt-5 md:mt-0 md:w-1/2">
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-white text-lg font-medium">Selected Files</h2>
-              <CircleX
-                onClick={() => { setSelectedFiles([]); reset() }}
-              />
-            </div>
-            <SelectedFilesList files={files} />
-          </div>
-        )}
-
-
       </div>
-
     </div>
+
+    {/* Selected Files List */}
+    {files.length > 0 && (
+      <div className="mt-8 bg-white/5 border border-white/10 p-4 rounded-xl w-full max-h-[30rem] overflow-auto space-y-3">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-white text-lg font-medium">Selected Files</h2>
+          <button onClick={() => { setSelectedFiles([]); reset() }} className="text-gray-400 hover:text-white transition-colors">
+            <CircleX size={20} />
+          </button>
+        </div>
+        <SelectedFilesList files={files} />
+      </div>
+    )}
+  </div>
+</div>
 
   );
 }
